@@ -321,12 +321,14 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CGTutorial.cpp" />
+    <ClCompile Include="controls.cpp" />
     <ClCompile Include="objects.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="controls.hpp" />
     <ClInclude Include="objects.hpp" />
     <ClInclude Include="objloader.hpp" />
     <ClInclude Include="shader.hpp" />
