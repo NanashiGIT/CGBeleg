@@ -1,0 +1,6 @@
+class Object3D{
+	Object3D(const char* objfile, const char* txtfile);
+	void draw();
+}
+
+Object3D teapot("teapot.obj",....);
