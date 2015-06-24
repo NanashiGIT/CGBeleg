@@ -142,9 +142,8 @@ static void drawLevel(){
 	for (int i = 0; i < 12; i++){
 		for (int j = 0; j < 12; j++){
 			if (level[i][j] == 1){
-				
-				Model = glm::translate(Model, glm::vec3(groesse*j, groesse, groesse*i));
-				Model = glm::scale(Model, glm::vec3(groesse, groesse, groesse));
+					Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, groesse*0.5, groesse*i - 0.5));
+				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
 				drawCube();
 				Model = save;
@@ -224,7 +223,6 @@ int main(void)
 	glClearColor(100.0f, 100.0f, 100.0f, 0.2f);
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
-
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 	//programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
@@ -273,54 +271,67 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
 	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1); // siehe layout im vertex shader 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);  
 
 	GLuint Texture = loadBMP_custom("stones.bmp");
 
 	glm::mat4 Save = Model;
 	Model = glm::translate(Model, glm::vec3(0.0, 0.0, 0.0));
-
 	// Eventloop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);	
 		
-		// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-		//Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-
 		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs();
 		Projection = getProjectionMatrix();
 		View = getViewMatrix();
-		Model = glm::mat4(1.0);
 		glm::mat4 MVP = Projection * View * Model;
 
+		// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+		//Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 
 		// Camera matrix
-		//View = glm::lookAt(glm::vec3(10,20,5), // Camera is at (0,0,-5), in World Space
-		//	glm::vec3(5,5,5),  // and looks at the origin
-		//	glm::vec3(0,1,0)); // Head is up (set to 0,-1,0 to look upside-down)
+		//View = glm::lookAt(glm::vec3(0, 0, -5), // Camera is at (0,0,-5), in World Space
+		//	glm::vec3(0, 0, 0),  // and looks at the origin
+		//	glm::vec3(0, 1, 0)); // Head is up (set to 0,-1,0 to look upside-down)
 
 		/*glm::vec3 lightPos = glm::vec3(4,4,-4);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);*/
 
 		// Model matrix : an identity matrix (model will be at the origin)
-		// = glm::mat4(1.0f);
+		Model = Save;
 		//Objekt drehen
-		Model = glm::rotate(Model, x, glm::vec3(1,0,0));
-		Model = glm::rotate(Model, y, glm::vec3(0,1,0));
-		Model = glm::rotate(Model, z, glm::vec3(0,0,1));
-		
-		
-		glm::vec4 lightPos = Model * glm::vec4(10.0,10.0,10.0,1.0);
-		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
-		
-		drawLevel();
+		Model = glm::rotate(Model, x, glm::vec3(1, 0, 0));
+		Model = glm::rotate(Model, y, glm::vec3(0, 1, 0));
+		Model = glm::rotate(Model, z, glm::vec3(0, 0, 1));
+
+		glBindVertexArray(VertexArrayIDTeapot);
+
+		glm::mat4 Save = Model;
+		Model = glm::translate(Model, glm::vec3(10.5, 10.0, 10.0));
+		Model = glm::scale(Model, glm::vec3(1.0 / 1000.0, 1.0 / 1000.0, 1.0 / 1000.0));
+		sendMVP();
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+		Model = Save;
+
 		// Bind our texture in Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Texture);
+		drawLevel();
 
+		Model = Save;
+		Model = glm::translate(Model, glm::vec3(5.0, 5.0, 5.0));
+		sendMVP();
+		glm::vec4 lightPos = Model * glm::vec4(10.0, 10.0, 7.0, 0.0);
+		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
+		//drawCS();
+		cout << lightPos.x << "x" << endl;
+		cout << lightPos.y << "y" << endl;
+		cout << lightPos.z << "z" << endl;
+		
+		Model = Save;
 		// Set our "myTextureSampler" sampler to user Texture Unit 0
 		glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
 
