@@ -32,7 +32,7 @@ using namespace glm;
 
 #include "texture.hpp"
 
-#define groesse 1.0
+#define groesse 1.0f
 
 using namespace std;
 
@@ -40,6 +40,17 @@ void error_callback(int error, const char* description)
 {
 	fputs(description, stderr);
 }
+
+// Diese Drei Matrizen global (Singleton-Muster), damit sie jederzeit modifiziert und
+// an die Grafikkarte geschickt werden koennen
+glm::mat4 Projection;
+glm::mat4 View;
+glm::mat4 Model;
+GLuint programID;
+GLuint textures[4];
+glm::vec3 position;
+bool free_cam = 0;
+
 
 float x = 0.0f, y = 0.0f, z=0.0f;
 int a=1,b=0,c=0;
@@ -62,7 +73,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_Z:
 		z += 5.0f;
 		break;
-	
+	case GLFW_KEY_F1:
+		free_cam = true;
+		break;
+	case GLFW_KEY_F2:
+		free_cam = false;
+		break;
 	default:
 		break;
 	}
@@ -71,13 +87,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	int level[12][12];
 
 
-
-// Diese Drei Matrizen global (Singleton-Muster), damit sie jederzeit modifiziert und
-// an die Grafikkarte geschickt werden koennen
-glm::mat4 Projection;
-glm::mat4 View;
-glm::mat4 Model;
-GLuint programID;
 
 
 void sendMVP()
@@ -116,18 +125,21 @@ static void readLevel(){
 
 void drawCS(){
 	glm::mat4 Save = Model;
-
+	Model = glm::mat4(1.0f);
 	Model = glm::scale(Model, glm::vec3(10000.0, 0.01, 0.01));
 	sendMVP();
 	drawCube();
 	Model = Save;
 
 
+	Model = glm::mat4(1.0f);
 	Model = glm::scale(Model, glm::vec3(0.01, 0.01, 10000.0));
 	sendMVP();
 	drawCube();
 	Model = Save;
 
+
+	Model = glm::mat4(1.0f);
 	Model = glm::scale(Model, glm::vec3(0.01, 10000.0, 0.01));
 	sendMVP();
 	drawCube();
@@ -137,23 +149,56 @@ void drawCS(){
 static void drawLevel(){
 	glm::mat4 save = Model;
 	
-	
+
 	drawCS();
-	for (int i = 0; i < 12; i++){
-		for (int j = 0; j < 12; j++){
-			if (level[i][j] == 1){
-					Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, groesse*0.5, groesse*i - 0.5));
+
+	for (int i = 1; i < 11; i++){
+		for (int j = 1; j < 11; j++){
+			if (level[i][j] == 1 || level[i][j] == 0){
+				glBindTexture(GL_TEXTURE_2D, textures[0]);
+				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, (-1)*groesse*0.5, groesse*i - 0.5));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
 				drawCube();
 				Model = save;
-				
+
+			}else{
+				glBindTexture(GL_TEXTURE_2D, textures[level[i][j]-1]);
+				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, (-1)*groesse*0.5, groesse*i - 0.5));
+				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
+				sendMVP();
+				drawCube();
+				Model = save;
 			}
-			//Model = glm::mat4(1.0f);
-			cout << level[i][j];
-			
 		}
-		cout << endl;
+	}
+
+
+	for (int i = 0; i < 12; i++){
+		for (int j = 0; j < 12; j++){
+			if (level[i][j] == 1){
+				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, groesse*0.5, groesse*i - 0.5));
+				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
+				sendMVP();
+				drawCube();
+				Model = save;
+			}
+			if (level[i][j] == 3){
+				x = groesse*j - 0.5;
+				y = groesse*0.5;
+				z = groesse*i - 0.5;
+			}
+		}
+	}
+
+	for (int i = 1; i < 11; i++){
+		for (int j = 1; j < 11; j++){
+				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, groesse*1.5, groesse*i - 0.5));
+				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
+				sendMVP();
+				drawCube();
+				Model = save;
+		}
 	}
 }
 
@@ -169,6 +214,9 @@ void drawSeg(float h){
 	drawSphere(100,100);
 	Model = Save;
 }
+
+
+
 
 int main(void)
 {
@@ -273,10 +321,24 @@ int main(void)
 	glEnableVertexAttribArray(1); // siehe layout im vertex shader 
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);  
 
-	GLuint Texture = loadBMP_custom("stones.bmp");
 
+
+	textures[0] = loadBMP_custom("stones.bmp");
+	textures[1] = loadBMP_custom("trap.bmp");
+	textures[2] = loadBMP_custom("start.bmp");
+	textures[3] = loadBMP_custom("finish.bmp");
+	
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
+
+	
+
+	Model = glm::mat4(1.0f);
 	glm::mat4 Save = Model;
-	Model = glm::translate(Model, glm::vec3(0.0, 0.0, 0.0));
+
+	drawLevel();
+	position = glm::vec3(x, y, z);
+	setPosition(position);
 	// Eventloop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -284,7 +346,7 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);	
 		
 		// Compute the MVP matrix from keyboard and mouse input
-		computeMatricesFromInputs();
+		computeMatricesFromInputs(free_cam);
 		Projection = getProjectionMatrix();
 		View = getViewMatrix();
 		glm::mat4 MVP = Projection * View * Model;
@@ -292,7 +354,7 @@ int main(void)
 		// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 		//Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 
-		// Camera matrix
+		 //Camera matrix
 		//View = glm::lookAt(glm::vec3(0, 0, -5), // Camera is at (0,0,-5), in World Space
 		//	glm::vec3(0, 0, 0),  // and looks at the origin
 		//	glm::vec3(0, 1, 0)); // Head is up (set to 0,-1,0 to look upside-down)
@@ -301,29 +363,15 @@ int main(void)
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);*/
 
 		// Model matrix : an identity matrix (model will be at the origin)
-		Model = Save;
 		//Objekt drehen
 		Model = glm::rotate(Model, x, glm::vec3(1, 0, 0));
 		Model = glm::rotate(Model, y, glm::vec3(0, 1, 0));
 		Model = glm::rotate(Model, z, glm::vec3(0, 0, 1));
 
-		glBindVertexArray(VertexArrayIDTeapot);
-
-		glm::mat4 Save = Model;
-		Model = glm::translate(Model, glm::vec3(10.5, 10.0, 10.0));
-		Model = glm::scale(Model, glm::vec3(1.0 / 1000.0, 1.0 / 1000.0, 1.0 / 1000.0));
-		sendMVP();
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 		Model = Save;
-
 		// Bind our texture in Texture Unit 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture);
 		drawLevel();
 
-		Model = Save;
-		Model = glm::translate(Model, glm::vec3(5.0, 5.0, 5.0));
-		sendMVP();
 		glm::vec4 lightPos = Model * glm::vec4(10.0, 10.0, 7.0, 0.0);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 		//drawCS();
@@ -333,7 +381,6 @@ int main(void)
 		
 		Model = Save;
 		// Set our "myTextureSampler" sampler to user Texture Unit 0
-		glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -343,7 +390,10 @@ int main(void)
 	} 
 
 	glDeleteBuffers(1, &uvbuffer);
-	glDeleteTextures(1, &Texture);
+	glDeleteTextures(1, &textures[0]);
+	glDeleteTextures(1, &textures[1]);
+	glDeleteTextures(1, &textures[2]);
+	glDeleteTextures(1, &textures[3]);
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteBuffers(1, &normalbuffer);
 	glDeleteProgram(programID);

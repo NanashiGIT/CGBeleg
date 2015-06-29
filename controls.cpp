@@ -21,7 +21,7 @@ glm::mat4 getProjectionMatrix(){
 
 
 // Initial position : on +Z
-glm::vec3 position = glm::vec3( 0, 0, 5 ); 
+glm::vec3 position2; 
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -32,13 +32,14 @@ float initialFoV = 45.0f;
 float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
+void setPosition(glm::vec3 position){
+	position2 = position;
+}
 
-
-void computeMatricesFromInputs(){
-
+void computeMatricesFromInputs(bool free_flight){
 	// glfwGetTime is called only once, the first time this function is called
 	static double lastTime = glfwGetTime();
-
+	
 	// Compute time difference between current and last frame
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
@@ -69,23 +70,31 @@ void computeMatricesFromInputs(){
 	);
 	
 	// Up vector
-	glm::vec3 up = glm::cross( right, direction );
+	//glm::vec3 up = glm::cross( right, direction );
+	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+
 
 	// Move forward
 	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-		position += direction * deltaTime * speed;
+		if (free_flight)
+			position2 += direction * deltaTime * speed;
+		else
+			position2 += (glm::vec3(1.0f, 0.0f, 1.0f)* direction) * deltaTime * speed;
 	}
 	// Move backward
 	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-		position -= direction * deltaTime * speed;
+		if (free_flight)
+			position2 -= direction * deltaTime * speed; 
+		else
+			position2 -= (glm::vec3(1.0f,0.0f,1.0f)* direction) * deltaTime * speed;
 	}
 	// Strafe right
 	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
-		position += right * deltaTime * speed;
+		position2 += right * deltaTime * speed;
 	}
 	// Strafe left
 	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
-		position -= right * deltaTime * speed;
+		position2 -= right * deltaTime * speed;
 	}
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
@@ -94,8 +103,8 @@ void computeMatricesFromInputs(){
 	ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
 	ViewMatrix       = glm::lookAt(
-								position,           // Camera is here
-								position+direction, // and looks here : at the same position, plus "direction"
+								position2,           // Camera is here
+								position2+direction, // and looks here : at the same position, plus "direction"
 								up                  // Head is up (set to 0,-1,0 to look upside-down)
 						   );
 
