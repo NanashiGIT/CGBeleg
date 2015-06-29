@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 extern GLFWwindow* window; // The "extern" keyword here is to access the variable "window" declared in tutorialXXX.cpp. This is a hack to keep the tutorials simple. Please avoid this.
 
+
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -29,6 +30,8 @@ float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 45.0f;
 
+float verticalAngle_LowerLimit = -1.0f;
+float verticalAngle_UpperLimit = 1.3f;
 float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
@@ -54,6 +57,10 @@ void computeMatricesFromInputs(bool free_flight){
 	// Compute new orientation
 	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
 	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
+	if (verticalAngle < verticalAngle_LowerLimit)
+		verticalAngle = verticalAngle_LowerLimit;
+	else if (verticalAngle > verticalAngle_UpperLimit)
+		verticalAngle = verticalAngle_UpperLimit;
 
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	glm::vec3 direction(
