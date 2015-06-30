@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cmath>   
 
 // Include GLEW
 #include <GL/glew.h>
@@ -202,6 +203,8 @@ static void drawLevel(){
 	}
 }
 
+
+
 void drawSeg(float h){
 	glm::mat4 Save = Model;
 
@@ -218,6 +221,7 @@ void drawSeg(float h){
 int main(void)
 {
 	readLevel();
+	readLevelControls();
 
 	// Initialise GLFW
 	if (!glfwInit())
@@ -371,9 +375,7 @@ int main(void)
 		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 		//drawCS();
-		cout << lightPos.x << "x" << endl;
-		cout << lightPos.y << "y" << endl;
-		cout << lightPos.z << "z" << endl;
+
 		
 		Model = Save;
 		// Set our "myTextureSampler" sampler to user Texture Unit 0
