@@ -118,3 +118,7 @@ void computeMatricesFromInputs(bool free_flight){
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
 }
+
+glm::vec3 getPosition(){
+	return position2;
+}

@@ -202,9 +202,6 @@ static void drawLevel(){
 	}
 }
 
-
-
-
 void drawSeg(float h){
 	glm::mat4 Save = Model;
 
@@ -277,8 +274,6 @@ int main(void)
 
 	// Shader auch benutzen !
 	glUseProgram(programID);
-	
-
 
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
@@ -339,6 +334,7 @@ int main(void)
 	drawLevel();
 	position = glm::vec3(x, y, z);
 	setPosition(position);
+
 	// Eventloop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -372,7 +368,7 @@ int main(void)
 		// Bind our texture in Texture Unit 0
 		drawLevel();
 
-		glm::vec4 lightPos = Model * glm::vec4(10.0, 10.0, 7.0, 0.0);
+		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 		//drawCS();
 		cout << lightPos.x << "x" << endl;
