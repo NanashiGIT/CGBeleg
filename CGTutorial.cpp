@@ -157,7 +157,7 @@ static void drawLevel(){
 		for (int j = 1; j < 11; j++){
 			if (level[i][j] == 1 || level[i][j] == 0){
 				glBindTexture(GL_TEXTURE_2D, textures[0]);
-				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, (-1)*groesse*0.5, groesse*i - 0.5));
+				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
 				drawCube();
@@ -165,7 +165,7 @@ static void drawLevel(){
 
 			}else{
 				glBindTexture(GL_TEXTURE_2D, textures[level[i][j]-1]);
-				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, (-1)*groesse*0.5, groesse*i - 0.5));
+				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
 				drawCube();
@@ -178,23 +178,23 @@ static void drawLevel(){
 	for (int i = 0; i < 12; i++){
 		for (int j = 0; j < 12; j++){
 			if (level[i][j] == 1){
-				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, groesse*0.5, groesse*i - 0.5));
+				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
 				drawCube();
 				Model = save;
 			}
 			if (level[i][j] == 3){
-				x = groesse*j - 0.5;
+				x = groesse*j;
 				y = groesse*0.5;
-				z = groesse*i - 0.5;
+				z = groesse*i;
 			}
 		}
 	}
 
 	for (int i = 1; i < 11; i++){
 		for (int j = 1; j < 11; j++){
-				Model = glm::translate(Model, glm::vec3(groesse*j - 0.5, groesse*1.5, groesse*i - 0.5));
+				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*1.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
 				drawCube();

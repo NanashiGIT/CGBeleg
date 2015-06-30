@@ -70,83 +70,93 @@ void setPosition(glm::vec3 position){
 
 glm::vec2 findPosition(){
 	glm::vec2 currentBlock;
-	float posx = 0.0;
-	float posz = 0.0;
+	float bottomLeftX, bottomLeftZ, topRightX, topRightZ;
 	float distance = 4.0f;
 	float distance_temp;
 	float x = position2.x;
 	float z = position2.z;
-	float delta_x, delta_z;
+	bool inX;
+	bool inZ;
 
 	for (int i = 0; i < 12; i++){
 		for (int j = 0; j < 12; j++){
-			posx = groesse*j - 0.5;
-			posz = groesse*i - 0.5;
-			delta_x = x - posx;
-			delta_z = z - posz;
-			distance_temp = sqrt(delta_x*delta_x + delta_z*delta_z);
-			if (distance < 1.0){
-				break;
-			}
-			if (distance_temp < distance){
-				distance = distance_temp;
-				currentBlock = glm::vec2(i, j);
+			inX = false;
+			inZ = false;
+			bottomLeftX = groesse*j -0.5;
+			bottomLeftZ = groesse*i + 0.5;
+			topRightX = groesse*j + 0.5;
+			topRightZ = groesse*i - 0.5;
+			if (x == bottomLeftX || x == topRightX)
+				if (z < bottomLeftZ && z > topRightZ){
+					inX = true;
+					inZ = true;
+				}
+			if (z == bottomLeftZ || z == topRightZ)
+				if (x > bottomLeftX && x < topRightX){
+					inX = true;
+					inZ = true;
+				}
+			if (x > bottomLeftX && x < topRightX)
+				inX = true;
+
+			if (z < bottomLeftZ && z > topRightZ)
+				inZ = true;
+
+			if (inX == true && inZ == true){
+				currentBlock = glm::vec2(j, i);
+				return currentBlock;
 			}
 		}
 	}
-	std::cout << currentBlock.x << currentBlock.y << std::endl;
 	return currentBlock;
 }
 
 bool checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
-	int i = cBlock.y;
-	int j = cBlock.x;
+	int j = cBlock[0];
+	int i = cBlock[1];
+	cout << j << i << endl;
 	float posx, posz, delta_x, delta_z, distance;
 	
 	//oben
-	if (levelControls[i + 1][j] == 1){
-		posx = groesse*j - 0.5;
-		posz = groesse*(i-1) - 0.5;
+	if (levelControls[i-1][j] == 1){
+		posx = groesse*j;
+		posz = groesse*(i-1);
 		cout << posx << " oben " << posz << endl;
-		cout << position2.z << endl << endl << endl;
-		if (position2.z < posz - 1.0) {
+		cout << position2.x << " " << position2.z << endl << endl << endl;
+		if (position2.z < posz + 0.65) {
+			cout << " ERROR OBEN "<< endl;
 			return false;
 		}
 	}
 
 	//unten
-	if (levelControls[i - 1][j] == 1){
-		posx = groesse*j - 0.5;
-		posz = groesse*(i + 1) - 0.5;
+	if (levelControls[i + 1][j] == 1){
+		posx = groesse*j;
+		posz = groesse*(i + 1);
 
-		cout << posx << " unten " << posz << endl;
-		cout << position2.z << endl << endl << endl;
-		if (position2.z > posz + 1.0) {
+		if (position2.z > posz - 0.65) {
+			cout << " ERROR UNTEN " << endl;
 			return false;
 		}
 	}
 
 	//rechts
 	if (levelControls[i][j + 1] == 1){
-		posx = groesse*(j + 1) - 0.5;
-		posz = groesse*i - 0.5;
+		posx = groesse*(j + 1);
+		posz = groesse*i;
 
-		cout << posx << " rechts " << posz << endl;
-		cout << position2.x << endl << endl << endl;
-		if (position2.x > posx + 1.0) {
+		if (position2.x > posx - 0.65) {
 			return false;
 		}
 	}
 
 	//links
 	if (levelControls[i][j - 1] == 1){
-		posx = groesse*(j - 1) - 0.5;
-		posz = groesse*i - 0.5;
+		posx = groesse*(j - 1);
+		posz = groesse*i;
 
-		cout << posx << " links " << posz << endl;
-		cout << position2.x << endl << endl << endl;
-		if (position2.x < posx - 1.0) {
+		if (position2.x < posx + 0.65) {
 			return false;
 		}
 	}
@@ -224,10 +234,11 @@ void computeMatricesFromInputs(bool free_flight){
 
 	currentBlock = findPosition();
 	check = checkBoundary(currentBlock);
+	
 	if (check == false){
 		position2 = position_old;
 	}
-
+	cout << position2.x << " " << position2.z << endl;
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 
