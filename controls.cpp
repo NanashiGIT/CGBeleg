@@ -102,10 +102,10 @@ glm::vec2 findPosition(){
 
 bool checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
-	int j = cBlock[0];
-	int i = cBlock[1];
+	int j = cBlock.x;
+	int i = cBlock.y;
 	cout << j << i << endl;
-	float posx, posz, delta_x, delta_z, distance;
+	float posx, posz;
 	
 	//oben
 	if (levelControls[i-1][j] == 1){

@@ -199,13 +199,13 @@ static void drawLevel(){
 	}
 }
 
-void drawSeg(float h){
+void drawSeg(float h, float x1, float z1){
 	glm::mat4 Save = Model;
 
-	Model = glm::translate(Model,glm::vec3(0,h/2,0));
-	Model = glm::scale(Model,glm::vec3(h/6,h/2,h/6));
+	Model = glm::translate(Model,glm::vec3(x1,h/2,z1));
+	Model = glm::scale(Model,glm::vec3(h/6,h/6,h/6));
 	sendMVP();
-	drawSphere(100,100);
+	drawSphere(30,30);
 	Model = Save;
 }
 
@@ -290,8 +290,8 @@ int main(void)
 	while (!glfwWindowShouldClose(window))
 	{
 		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);	
-		
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs(free_cam);
 		Projection = getProjectionMatrix();
@@ -311,6 +311,8 @@ int main(void)
 		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 		//drawCS();
+
+		drawSeg(0.6, getPosition().x, getPosition().z);
 
 		Model = Save;
 		// Swap buffers
