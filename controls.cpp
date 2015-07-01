@@ -71,8 +71,6 @@ void setPosition(glm::vec3 position){
 glm::vec2 findPosition(){
 	glm::vec2 currentBlock;
 	float bottomLeftX, bottomLeftZ, topRightX, topRightZ;
-	float distance = 4.0f;
-	float distance_temp;
 	float x = position2.x;
 	float z = position2.z;
 	bool inX;
@@ -86,20 +84,11 @@ glm::vec2 findPosition(){
 			bottomLeftZ = groesse*i + 0.5;
 			topRightX = groesse*j + 0.5;
 			topRightZ = groesse*i - 0.5;
-			if (x == bottomLeftX || x == topRightX)
-				if (z < bottomLeftZ && z > topRightZ){
-					inX = true;
-					inZ = true;
-				}
-			if (z == bottomLeftZ || z == topRightZ)
-				if (x > bottomLeftX && x < topRightX){
-					inX = true;
-					inZ = true;
-				}
-			if (x > bottomLeftX && x < topRightX)
+
+			if (x >= bottomLeftX && x <= topRightX)
 				inX = true;
 
-			if (z < bottomLeftZ && z > topRightZ)
+			if (z <= bottomLeftZ && z >= topRightZ)
 				inZ = true;
 
 			if (inX == true && inZ == true){
@@ -122,8 +111,6 @@ bool checkBoundary(glm::vec2 cBlock){
 	if (levelControls[i-1][j] == 1){
 		posx = groesse*j;
 		posz = groesse*(i-1);
-		cout << posx << " oben " << posz << endl;
-		cout << position2.x << " " << position2.z << endl << endl << endl;
 		if (position2.z < posz + 0.65) {
 			cout << " ERROR OBEN "<< endl;
 			return false;
@@ -238,7 +225,7 @@ void computeMatricesFromInputs(bool free_flight){
 	if (check == false){
 		position2 = position_old;
 	}
-	cout << position2.x << " " << position2.z << endl;
+	cout << position2.x << " " << position2.z << " " << levelControls[(int)currentBlock.y][(int)currentBlock.x] << endl;
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 

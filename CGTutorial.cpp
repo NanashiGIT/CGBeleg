@@ -85,10 +85,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-	int level[12][12];
-
-
-
+int level[12][12];
 
 void sendMVP()
 {
@@ -149,7 +146,6 @@ void drawCS(){
 
 static void drawLevel(){
 	glm::mat4 save = Model;
-	
 
 	drawCS();
 
@@ -203,8 +199,6 @@ static void drawLevel(){
 	}
 }
 
-
-
 void drawSeg(float h){
 	glm::mat4 Save = Model;
 
@@ -214,8 +208,6 @@ void drawSeg(float h){
 	drawSphere(100,100);
 	Model = Save;
 }
-
-
 
 
 int main(void)
@@ -279,49 +271,6 @@ int main(void)
 	// Shader auch benutzen !
 	glUseProgram(programID);
 
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals; 
-	bool res = loadOBJ("teapot.obj", vertices, uvs, normals);
-
-	// Jedes Objekt eigenem VAO zuordnen, damit mehrere Objekte moeglich sind
-	// VAOs sind Container fuer mehrere Buffer, die zusammen gesetzt werden sollen.
-	GLuint VertexArrayIDTeapot;
-	glGenVertexArrays(1, &VertexArrayIDTeapot);
-	glBindVertexArray(VertexArrayIDTeapot);
-
-	// Ein ArrayBuffer speichert Daten zu Eckpunkten (hier xyz bzw. Position)
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer); // Kennung erhalten
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer); // Daten zur Kennung definieren
-	// Buffer zugreifbar für die Shader machen
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-
-	// Erst nach glEnableVertexAttribArray kann DrawArrays auf die Daten zugreifen...
-	glEnableVertexAttribArray(0); // siehe layout im vertex shader: location = 0 
-	glVertexAttribPointer(0,  // location = 0 
-		3,  // Datenformat vec3: 3 floats fuer xyz 
-		GL_FLOAT, 
-		GL_FALSE, // Fixedpoint data normalisieren ?
-		0, // Eckpunkte direkt hintereinander gespeichert
-		(void*) 0); // abweichender Datenanfang ? 
-
-	GLuint normalbuffer; // Hier alles analog für Normalen in location == 2
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(2); // siehe layout im vertex shader 
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-	GLuint uvbuffer; // Hier alles analog für Texturkoordinaten in location == 1 (2 floats u und v!)
-	glGenBuffers(1, &uvbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1); // siehe layout im vertex shader 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);  
-
-
-
 	textures[0] = loadBMP_custom("stones.bmp");
 	textures[1] = loadBMP_custom("trap.bmp");
 	textures[2] = loadBMP_custom("start.bmp");
@@ -329,8 +278,6 @@ int main(void)
 	
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
-
-	
 
 	Model = glm::mat4(1.0f);
 	glm::mat4 Save = Model;
@@ -351,17 +298,6 @@ int main(void)
 		View = getViewMatrix();
 		glm::mat4 MVP = Projection * View * Model;
 
-		// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-		//Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-
-		 //Camera matrix
-		//View = glm::lookAt(glm::vec3(0, 0, -5), // Camera is at (0,0,-5), in World Space
-		//	glm::vec3(0, 0, 0),  // and looks at the origin
-		//	glm::vec3(0, 1, 0)); // Head is up (set to 0,-1,0 to look upside-down)
-
-		/*glm::vec3 lightPos = glm::vec3(4,4,-4);
-		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);*/
-
 		// Model matrix : an identity matrix (model will be at the origin)
 		//Objekt drehen
 		Model = glm::rotate(Model, x, glm::vec3(1, 0, 0));
@@ -376,10 +312,7 @@ int main(void)
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 		//drawCS();
 
-		
 		Model = Save;
-		// Set our "myTextureSampler" sampler to user Texture Unit 0
-
 		// Swap buffers
 		glfwSwapBuffers(window);
 
@@ -387,13 +320,10 @@ int main(void)
 		glfwPollEvents();
 	} 
 
-	glDeleteBuffers(1, &uvbuffer);
 	glDeleteTextures(1, &textures[0]);
 	glDeleteTextures(1, &textures[1]);
 	glDeleteTextures(1, &textures[2]);
 	glDeleteTextures(1, &textures[3]);
-	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &normalbuffer);
 	glDeleteProgram(programID);
 
 	// Close OpenGL window and terminate GLFW
