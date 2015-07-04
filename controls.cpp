@@ -29,12 +29,13 @@ glm::mat4 getProjectionMatrix(){
 
 // Initial position : on +Z
 glm::vec3 position2; 
+glm::vec3 position3;
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
 float verticalAngle = 0.0f;
 // Initial Field of View
-float initialFoV = 45.0f;
+float initialFoV = 75.0f;
 
 float verticalAngle_LowerLimit = -1.0f;
 float verticalAngle_UpperLimit = 1.3f;
@@ -104,7 +105,7 @@ bool checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
 	int j = cBlock.x;
 	int i = cBlock.y;
-	cout << j << i << endl;
+	//cout << j << i << endl;
 	float posx, posz;
 	
 	//oben
@@ -184,6 +185,12 @@ void computeMatricesFromInputs(bool free_flight){
 		cos(verticalAngle) * cos(horizontalAngle)
 	);
 	
+	glm::vec3 objectDirection(
+		sin(horizontalAngle),
+		0,
+		cos(horizontalAngle)
+		);
+
 	// Right vector
 	glm::vec3 right = glm::vec3(
 		sin(horizontalAngle - 3.14f/2.0f), 
@@ -192,8 +199,8 @@ void computeMatricesFromInputs(bool free_flight){
 	);
 	
 	// Up vector
-	//glm::vec3 up = glm::cross( right, direction );
-	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 up = glm::cross( right, direction );
+	//glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
 	// Move forward
@@ -225,7 +232,7 @@ void computeMatricesFromInputs(bool free_flight){
 	if (check == false){
 		position2 = position_old;
 	}
-	cout << position2.x << " " << position2.z << " " << levelControls[(int)currentBlock.y][(int)currentBlock.x] << endl;
+	//cout << position2.x << " " << position2.z << " " << levelControls[(int)currentBlock.y][(int)currentBlock.x] << endl;
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 
@@ -240,8 +247,14 @@ void computeMatricesFromInputs(bool free_flight){
 
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
+	position3 = position2 + objectDirection;
+		cout<<"(" << position3.x << "," << position3.z << ")/(" << position2.x << "," << position2.z <<")" <<endl;
 }
 
 glm::vec3 getPosition(){
 	return position2;
+}
+
+glm::vec3 getPositionWithDirection(){
+	return position3;
 }

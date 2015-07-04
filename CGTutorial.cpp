@@ -199,13 +199,14 @@ static void drawLevel(){
 	}
 }
 
-void drawSeg(float h, float x1, float z1){
+void drawSeg(glm::vec3 v){
 	glm::mat4 Save = Model;
 
-	Model = glm::translate(Model,glm::vec3(x1,h/2,z1));
-	Model = glm::scale(Model,glm::vec3(h/6,h/6,h/6));
+	glBindTexture(GL_TEXTURE_2D, textures[2]);
+	Model = glm::translate(Model,v);
+	Model = glm::scale(Model, glm::vec3(0.1f, 0.1f, 0.1f));
 	sendMVP();
-	drawSphere(30,30);
+	drawCube();
 	Model = Save;
 }
 
@@ -308,11 +309,11 @@ int main(void)
 		// Bind our texture in Texture Unit 0
 		drawLevel();
 
+		drawSeg(getPositionWithDirection());
+		//drawSeg(getPositionTest());
+	
 		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
-		//drawCS();
-
-		drawSeg(0.6, getPosition().x, getPosition().z);
 
 		Model = Save;
 		// Swap buffers
