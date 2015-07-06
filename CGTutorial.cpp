@@ -226,7 +226,8 @@ void triggerFinish(){
 
 int main(int argc, char *argv[])
 {
-
+	readLevel();
+	readLevelControls();
 	// Initialise GLFW
 	if (!glfwInit())
 	{
