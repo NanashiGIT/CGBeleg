@@ -8,4 +8,5 @@ void setPosition(glm::vec3 position);
 glm::vec3 getPosition();
 glm::vec3 getPositionWithDirection();
 void readLevelControls();
+glm::vec2 findPosition();
 #endif

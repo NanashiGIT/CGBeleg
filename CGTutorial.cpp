@@ -10,7 +10,13 @@
 
 // Include GLEW
 #include <GL/glew.h>
+#include <stdlib.h>
 
+GLfloat angle = 0.0;	/*Rotationsvinkel*/
+
+void createMenu(void);
+void menu(int value);
+void disp(void);
 // Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
@@ -51,12 +57,14 @@ GLuint programID;
 GLuint textures[4];
 glm::vec3 position;
 bool free_cam = 0;
+glm::vec2 currentBlock;
 
 
 float x = 0.0f, y = 0.0f, z=0.0f;
 int a=1,b=0,c=0;
 
 float x_1 = 0.0f, x_2 = 0.0f, x_3 = 0.0f, x_4 = 0.0f;
+
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -211,7 +219,17 @@ void drawSeg(glm::vec3 v){
 }
 
 
-int main(void)
+void triggerTrap(){
+	cout << "TRAP !" << endl;
+}
+
+void triggerFinish(){
+	cout << "FINISH !" << endl;
+}
+
+
+
+int main(int argc, char *argv[])
 {
 	readLevel();
 	readLevelControls();
@@ -316,6 +334,17 @@ int main(void)
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 
 		Model = Save;
+
+		currentBlock = findPosition();
+		int x = currentBlock.x;
+		int z = currentBlock.y;
+		if (level[z][x] == 2){
+			triggerTrap();
+		}
+		else if (level[z][x] == 4){
+			triggerFinish();
+		}
+
 		// Swap buffers
 		glfwSwapBuffers(window);
 
