@@ -12,11 +12,6 @@
 #include <GL/glew.h>
 #include <stdlib.h>
 
-GLfloat angle = 0.0;	/*Rotationsvinkel*/
-
-void createMenu(void);
-void menu(int value);
-void disp(void);
 // Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
@@ -231,8 +226,6 @@ void triggerFinish(){
 
 int main(int argc, char *argv[])
 {
-	readLevel();
-	readLevelControls();
 
 	// Initialise GLFW
 	if (!glfwInit())
