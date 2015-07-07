@@ -50,15 +50,16 @@ glm::mat4 Projection;
 glm::mat4 View;
 glm::mat4 Model;
 GLuint programID;
-GLuint textures[4];
+GLuint textures[5];
 glm::vec3 position;
 bool free_cam = 0;
 glm::vec2 currentBlock;
-
+vector< vector<int> > level;
+int dimension = 0;
 
 float x = 0.0f, y = 0.0f, z=0.0f;
 int a=1,b=0,c=0;
-
+int textureSelector = 0;
 float x_1 = 0.0f, x_2 = 0.0f, x_3 = 0.0f, x_4 = 0.0f;
 
 
@@ -89,7 +90,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-int level[12][12];
+
 
 void sendMVP()
 {
@@ -105,18 +106,21 @@ void sendMVP()
 
 static void readLevel(){
 	string line;
-	ifstream myfile("Muster.txt");
+	ifstream myfile("Muster2.txt");
 	if (myfile.is_open())
 	{
 		int i = 0;
 		while (getline(myfile, line))
 		{
-			for (int j = 0; j<13; j++)
-			{
-				level[i][j] = line[j] - '0';
-				cout << level[i][j];
+			vector<int> row;
+			level.push_back(row);
+			if (i == 0){
+				dimension = line.size();
 			}
-			cout << "\n";
+			for (int j = 0; j < dimension + 1; j++)
+			{
+				level[i].push_back(line[j] - '0');
+			}
 			i++;
 		}
 		myfile.close();
@@ -153,8 +157,8 @@ static void drawLevel(){
 
 	drawCS();
 
-	for (int i = 1; i < 11; i++){
-		for (int j = 1; j < 11; j++){
+	for (int i = 1; i < dimension - 1; i++){
+		for (int j = 1; j < dimension - 1; j++){
 			if (level[i][j] == 1 || level[i][j] == 0){
 				glBindTexture(GL_TEXTURE_2D, textures[0]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
@@ -163,8 +167,23 @@ static void drawLevel(){
 				drawCube();
 				Model = save;
 
-			}else{
-				glBindTexture(GL_TEXTURE_2D, textures[level[i][j]-1]);
+			}else if (level[i][j] == 2){
+				if (textureSelector == 0){
+					glBindTexture(GL_TEXTURE_2D, textures[1]);
+					textureSelector = 1;
+				}
+				else{
+					glBindTexture(GL_TEXTURE_2D, textures[4]);
+					textureSelector = 0;
+				}
+				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
+				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
+				sendMVP();
+				drawCube();
+				Model = save;
+			}
+			else{
+				glBindTexture(GL_TEXTURE_2D, textures[level[i][j] - 1]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
@@ -175,8 +194,8 @@ static void drawLevel(){
 	}
 
 
-	for (int i = 0; i < 12; i++){
-		for (int j = 0; j < 12; j++){
+	for (int i = 0; i < dimension; i++){
+		for (int j = 0; j < dimension; j++){
 			if (level[i][j] == 1){
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
@@ -192,8 +211,8 @@ static void drawLevel(){
 		}
 	}
 
-	for (int i = 1; i < 11; i++){
-		for (int j = 1; j < 11; j++){
+	for (int i = 1; i < dimension - 1; i++){
+		for (int j = 1; j < dimension - 1; j++){
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*1.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
@@ -201,6 +220,7 @@ static void drawLevel(){
 				Model = save;
 		}
 	}
+	textureSelector = 0;
 }
 
 void drawSeg(glm::vec3 v1, glm::vec3 v2){
@@ -237,7 +257,36 @@ void triggerFinish(){
 	cout << "FINISH !" << endl;
 }
 
+void loop_menu(){
+	glm::mat4 save = Model;
+	glm::vec4 lightPos = glm::vec4(0,0,0,1);
+	glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
+	
+	while (!glfwWindowShouldClose(window)){
+		Model = save;
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Compute the MVP matrix from keyboard and mouse input
+		glm::mat4 View = glm::lookAt(
+			glm::vec3(10.0f, 10.0f, 0.0f),           // Camera is here
+			glm::vec3(2.0f, 5.0f, 0.0f), // and looks here : at the same position, plus "direction"
+			glm::vec3(0.0f, 1.0f, 0.0f)          // Head is up (set to 0,-1,0 to look upside-down)
+			);
+		glm::mat4 Projection = glm::perspective(75.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+		glm::mat4 MVP = Projection * View * Model;
+		
+		glBindTexture(GL_TEXTURE_2D, textures[0]);
+		Model = glm::translate(Model, glm::vec3(1, 0.5, 0));
+		Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
+		sendMVP();
+		drawCube();
+		Model = save;
+		// Swap buffers
+		glfwSwapBuffers(window);
 
+		// Poll for and process events 
+		glfwPollEvents();
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -294,22 +343,22 @@ int main(int argc, char *argv[])
 	glEnable(GL_CULL_FACE);
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
-	//programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
 
 	// Shader auch benutzen !
 	glUseProgram(programID);
 
 	textures[0] = loadBMP_custom("stones.bmp");
-	textures[1] = loadBMP_custom("trap.bmp");
+	textures[1] = loadBMP_custom("trap_beartrap.bmp");
 	textures[2] = loadBMP_custom("start.bmp");
 	textures[3] = loadBMP_custom("finish.bmp");
+	textures[4] = loadBMP_custom("trap_hole.bmp");
 	
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
 
 	Model = glm::mat4(1.0f);
 	glm::mat4 Save = Model;
-
+	//loop_menu();
 	drawLevel();
 	position = glm::vec3(x, y, z);
 	setPosition(position);
@@ -319,21 +368,13 @@ int main(int argc, char *argv[])
 	{
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs(free_cam);
 		Projection = getProjectionMatrix();
 		View = getViewMatrix();
 		glm::mat4 MVP = Projection * View * Model;
 
-		// Model matrix : an identity matrix (model will be at the origin)
-		//Objekt drehen
-		/*Model = glm::rotate(Model, x, glm::vec3(1, 0, 0));
-		Model = glm::rotate(Model, y, glm::vec3(0, 1, 0));
-		Model = glm::rotate(Model, z, glm::vec3(0, 0, 1));
-		*/
 		Model = Save;
-		// Bind our texture in Texture Unit 0
 		drawLevel();
 
 		drawSeg(getPositionWithDirection(), getPosition());
@@ -365,6 +406,8 @@ int main(int argc, char *argv[])
 	glDeleteTextures(1, &textures[1]);
 	glDeleteTextures(1, &textures[2]);
 	glDeleteTextures(1, &textures[3]);
+	glDeleteTextures(1, &textures[4]);
+
 	glDeleteProgram(programID);
 
 	// Close OpenGL window and terminate GLFW

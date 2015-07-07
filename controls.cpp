@@ -11,7 +11,7 @@ extern GLFWwindow* window; // The "extern" keyword here is to access the variabl
 #include <fstream>
 #include <sstream>
 using namespace glm;
-
+#include <vector>
 #include "controls.hpp"
 
 using namespace std;
@@ -41,22 +41,26 @@ float verticalAngle_LowerLimit = -1.0f;
 float verticalAngle_UpperLimit = 1.3f;
 float speed = 1.0f; // 3 units / second
 float mouseSpeed = 0.005f;
-int levelControls[12][12];
+vector< vector<int> > levelControls;
+int dimensionControls = 0;
 
 void readLevelControls(){
 	string line;
-	ifstream myfile("Muster.txt");
+	ifstream myfile("Muster2.txt");
 	if (myfile.is_open())
 	{
 		int i = 0;
 		while (getline(myfile, line))
 		{
-			for (int j = 0; j<13; j++)
-			{
-				levelControls[i][j] = line[j] - '0';
-				cout << levelControls[i][j];
+			vector<int> row;
+			levelControls.push_back(row);
+			if (i == 0){
+				dimensionControls = line.size();
 			}
-			cout << "\n";
+			for (int j = 0; j< dimensionControls + 1; j++)
+			{
+				levelControls[i].push_back(line[j] - '0');
+			}
 			i++;
 		}
 		myfile.close();
@@ -77,8 +81,8 @@ glm::vec2 findPosition(){
 	bool inX;
 	bool inZ;
 
-	for (int i = 0; i < 12; i++){
-		for (int j = 0; j < 12; j++){
+	for (int i = 0; i < dimensionControls; i++){
+		for (int j = 0; j < dimensionControls; j++){
 			inX = false;
 			inZ = false;
 			bottomLeftX = groesse*j -0.5;
