@@ -12,6 +12,7 @@
 #include <GL/glew.h>
 #include <stdlib.h>
 
+#include <GL/glut.h>
 // Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
@@ -202,12 +203,26 @@ static void drawLevel(){
 	}
 }
 
-void drawSeg(glm::vec3 v){
+void drawSeg(glm::vec3 v1, glm::vec3 v2){
 	glm::mat4 Save = Model;
-
+	glm::mat4 viewMatrix = getViewMatrix();
+	glm::mat4 inversed;
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			inversed[i][j] = viewMatrix[j][i];
+		}
+	}
+	inversed[3][0] = 0;
+	inversed[3][1] = 0;
+	inversed[3][2] = 0;
+	inversed[3][3] = 1;
+	inversed[0][3] = 0;
+	inversed[1][3] = 0;
+	inversed[2][3] = 0;
 	glBindTexture(GL_TEXTURE_2D, textures[2]);
-	Model = glm::translate(Model,v);
-	Model = glm::scale(Model, glm::vec3(0.1f, 0.1f, 0.1f));
+	Model = glm::translate(Model, v1);
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.02f, 0.1f, 0.02f));
 	sendMVP();
 	drawCube();
 	Model = Save;
@@ -313,15 +328,15 @@ int main(int argc, char *argv[])
 
 		// Model matrix : an identity matrix (model will be at the origin)
 		//Objekt drehen
-		Model = glm::rotate(Model, x, glm::vec3(1, 0, 0));
+		/*Model = glm::rotate(Model, x, glm::vec3(1, 0, 0));
 		Model = glm::rotate(Model, y, glm::vec3(0, 1, 0));
 		Model = glm::rotate(Model, z, glm::vec3(0, 0, 1));
-
+		*/
 		Model = Save;
 		// Bind our texture in Texture Unit 0
 		drawLevel();
 
-		drawSeg(getPositionWithDirection());
+		drawSeg(getPositionWithDirection(), getPosition());
 		//drawSeg(getPositionTest());
 	
 		glm::vec4 lightPos = glm::vec4(getPosition(), 1);

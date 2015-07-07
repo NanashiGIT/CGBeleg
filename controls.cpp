@@ -186,9 +186,9 @@ void computeMatricesFromInputs(bool free_flight){
 	);
 	
 	glm::vec3 objectDirection(
-		sin(horizontalAngle),
-		0,
-		cos(horizontalAngle)
+		sin(horizontalAngle)/4,
+		sin(verticalAngle)/4,
+		cos(horizontalAngle)/4
 		);
 
 	// Right vector
