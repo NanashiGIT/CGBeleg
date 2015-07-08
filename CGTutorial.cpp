@@ -50,13 +50,16 @@ glm::mat4 Projection;
 glm::mat4 View;
 glm::mat4 Model;
 GLuint programID;
-GLuint textures[5];
+GLuint textures[8];
 glm::vec3 position;
 bool free_cam = 0;
+bool dead = 0;
+bool finished = 0;
 glm::vec2 currentBlock;
 vector< vector<int> > level;
 int dimension = 0;
-
+void loop_game();
+void loop_menu();
 float x = 0.0f, y = 0.0f, z=0.0f;
 int a=1,b=0,c=0;
 int textureSelector = 0;
@@ -85,6 +88,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_F2:
 		free_cam = false;
 		break;
+	case GLFW_KEY_ENTER:
+		dead = 0;
+		finished = 0;
+		loop_game();
+		break;
 	default:
 		break;
 	}
@@ -106,7 +114,7 @@ void sendMVP()
 
 static void readLevel(){
 	string line;
-	ifstream myfile("Muster2.txt");
+	ifstream myfile("level2.txt");
 	if (myfile.is_open())
 	{
 		int i = 0;
@@ -251,35 +259,105 @@ void drawSeg(glm::vec3 v1, glm::vec3 v2){
 
 void triggerTrap(){
 	cout << "TRAP !" << endl;
+	dead = 1;
+	loop_menu();
 }
 
 void triggerFinish(){
 	cout << "FINISH !" << endl;
+	finished = 1;
+	loop_menu();
 }
 
 void loop_menu(){
+	programID = LoadShaders("StandardShading.vertexshader", "StandardShading-menu.fragmentshader");
+
+	// Shader auch benutzen !
+	glUseProgram(programID);
+
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
+
 	glm::mat4 save = Model;
-	glm::vec4 lightPos = glm::vec4(0,0,0,1);
+	glm::vec4 lightPos = glm::vec4(-4,0,0,0);
 	glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 	
 	while (!glfwWindowShouldClose(window)){
 		Model = save;
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Compute the MVP matrix from keyboard and mouse input
-		glm::mat4 View = glm::lookAt(
-			glm::vec3(10.0f, 10.0f, 0.0f),           // Camera is here
-			glm::vec3(2.0f, 5.0f, 0.0f), // and looks here : at the same position, plus "direction"
+		View = glm::lookAt(
+			glm::vec3(0.0f, 0.0f, 0.0f),           // Camera is here
+			glm::vec3(1.0f, 0.0f, 0.0f), // and looks here : at the same position, plus "direction"
 			glm::vec3(0.0f, 1.0f, 0.0f)          // Head is up (set to 0,-1,0 to look upside-down)
 			);
-		glm::mat4 Projection = glm::perspective(75.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-		glm::mat4 MVP = Projection * View * Model;
-		
-		glBindTexture(GL_TEXTURE_2D, textures[0]);
-		Model = glm::translate(Model, glm::vec3(1, 0.5, 0));
+		Projection = glm::perspective(75.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+		if (finished == 1)
+			glBindTexture(GL_TEXTURE_2D, textures[7]);
+		else if (dead == 1)
+			glBindTexture(GL_TEXTURE_2D, textures[6]);
+		else if (dead == 0)
+			glBindTexture(GL_TEXTURE_2D, textures[5]);
+		Model = glm::translate(Model, glm::vec3(0.98f, 0.0f, 0.0f));
 		Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 		sendMVP();
 		drawCube();
 		Model = save;
+		// Swap buffers
+		glfwSwapBuffers(window);
+
+		// Poll for and process events 
+		glfwPollEvents();
+	}
+}
+
+void loop_game(){
+	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
+
+	// Shader auch benutzen !
+	glUseProgram(programID);
+
+	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
+	
+	Model = glm::mat4(1.0f);
+	glm::mat4 Save = Model;
+	drawLevel();
+	position = glm::vec3(x, y, z);
+	setPosition(position);
+
+	// Eventloop
+	while (!glfwWindowShouldClose(window))
+	{
+		// Clear the screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Compute the MVP matrix from keyboard and mouse input
+		computeMatricesFromInputs(free_cam);
+		Projection = getProjectionMatrix();
+		View = getViewMatrix();
+		glm::mat4 MVP = Projection * View * Model;
+
+		Model = Save;
+		drawLevel();
+
+		drawSeg(getPositionWithDirection(), getPosition());
+		//drawSeg(getPositionTest());
+
+		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
+		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
+
+		Model = Save;
+
+		currentBlock = findPosition();
+		int x = currentBlock.x;
+		int z = currentBlock.y;
+		if (level[z][x] == 2){
+			triggerTrap();
+		}
+		else if (level[z][x] == 4){
+			triggerFinish();
+		}
+
 		// Swap buffers
 		glfwSwapBuffers(window);
 
@@ -342,7 +420,7 @@ int main(int argc, char *argv[])
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 	// Create and compile our GLSL program from the shaders
-	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
+	programID = LoadShaders("StandardShading.vertexshader", "StandardShading-menu.fragmentshader");
 
 	// Shader auch benutzen !
 	glUseProgram(programID);
@@ -352,61 +430,24 @@ int main(int argc, char *argv[])
 	textures[2] = loadBMP_custom("start.bmp");
 	textures[3] = loadBMP_custom("finish.bmp");
 	textures[4] = loadBMP_custom("trap_hole.bmp");
-	
+	textures[5] = loadBMP_custom("menu.bmp");
+	textures[6] = loadBMP_custom("death-screen.bmp");
+	textures[7] = loadBMP_custom("finish-screen.bmp");
+
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
 
 	Model = glm::mat4(1.0f);
 	glm::mat4 Save = Model;
-	//loop_menu();
-	drawLevel();
-	position = glm::vec3(x, y, z);
-	setPosition(position);
-
-	// Eventloop
-	while (!glfwWindowShouldClose(window))
-	{
-		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// Compute the MVP matrix from keyboard and mouse input
-		computeMatricesFromInputs(free_cam);
-		Projection = getProjectionMatrix();
-		View = getViewMatrix();
-		glm::mat4 MVP = Projection * View * Model;
-
-		Model = Save;
-		drawLevel();
-
-		drawSeg(getPositionWithDirection(), getPosition());
-		//drawSeg(getPositionTest());
-	
-		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
-		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
-
-		Model = Save;
-
-		currentBlock = findPosition();
-		int x = currentBlock.x;
-		int z = currentBlock.y;
-		if (level[z][x] == 2){
-			triggerTrap();
-		}
-		else if (level[z][x] == 4){
-			triggerFinish();
-		}
-
-		// Swap buffers
-		glfwSwapBuffers(window);
-
-		// Poll for and process events 
-		glfwPollEvents();
-	} 
+	loop_menu();
 
 	glDeleteTextures(1, &textures[0]);
 	glDeleteTextures(1, &textures[1]);
 	glDeleteTextures(1, &textures[2]);
 	glDeleteTextures(1, &textures[3]);
 	glDeleteTextures(1, &textures[4]);
+	glDeleteTextures(1, &textures[5]);
+	glDeleteTextures(1, &textures[6]);
 
 	glDeleteProgram(programID);
 

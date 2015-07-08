@@ -41,12 +41,13 @@ float verticalAngle_LowerLimit = -1.0f;
 float verticalAngle_UpperLimit = 1.3f;
 float speed = 1.0f; // 3 units / second
 float mouseSpeed = 0.005f;
+bool check[2];
 vector< vector<int> > levelControls;
 int dimensionControls = 0;
 
 void readLevelControls(){
 	string line;
-	ifstream myfile("Muster2.txt");
+	ifstream myfile("level2.txt");
 	if (myfile.is_open())
 	{
 		int i = 0;
@@ -105,7 +106,7 @@ glm::vec2 findPosition(){
 	return currentBlock;
 }
 
-bool checkBoundary(glm::vec2 cBlock){
+int checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
 	int j = cBlock.x;
 	int i = cBlock.y;
@@ -118,7 +119,8 @@ bool checkBoundary(glm::vec2 cBlock){
 		posz = groesse*(i-1);
 		if (position2.z < posz + 0.65) {
 			cout << " ERROR OBEN "<< endl;
-			return false;
+			check[1] = false;
+			return 0;
 		}
 	}
 
@@ -129,7 +131,8 @@ bool checkBoundary(glm::vec2 cBlock){
 
 		if (position2.z > posz - 0.65) {
 			cout << " ERROR UNTEN " << endl;
-			return false;
+			check[1] = false;
+			return 0;
 		}
 	}
 
@@ -139,7 +142,8 @@ bool checkBoundary(glm::vec2 cBlock){
 		posz = groesse*i;
 
 		if (position2.x > posx - 0.65) {
-			return false;
+			check[0] = false;
+			return 0;
 		}
 	}
 
@@ -149,7 +153,8 @@ bool checkBoundary(glm::vec2 cBlock){
 		posz = groesse*i;
 
 		if (position2.x < posx + 0.65) {
-			return false;
+			check[0] = false;
+			return 0;
 		}
 	}
 	return true;
@@ -160,7 +165,7 @@ void computeMatricesFromInputs(bool free_flight){
 	static double lastTime = glfwGetTime();
 	glm::vec3 position_old = position2;
 	glm::vec2 currentBlock;
-	bool check = true;
+	
 
 
 	// Compute time difference between current and last frame
@@ -231,11 +236,16 @@ void computeMatricesFromInputs(bool free_flight){
 	}
 
 	currentBlock = findPosition();
-	check = checkBoundary(currentBlock);
+	checkBoundary(currentBlock);
 	
-	if (check == false){
-		position2 = position_old;
+	if (check[0] == false){
+		position2.x = position_old.x;
 	}
+	if (check[1] == false){
+		position2.z = position_old.z;
+	}
+	check[0] = true;
+	check[1] = true;
 	//cout << position2.x << " " << position2.z << " " << levelControls[(int)currentBlock.y][(int)currentBlock.x] << endl;
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
