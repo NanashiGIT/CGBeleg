@@ -55,6 +55,7 @@ glm::vec3 position;
 bool free_cam = 0;
 bool dead = 0;
 bool finished = 0;
+bool init = false;
 glm::vec2 currentBlock;
 vector< vector<int> > level;
 int dimension = 0;
@@ -89,9 +90,17 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		free_cam = false;
 		break;
 	case GLFW_KEY_ENTER:
-		dead = 0;
-		finished = 0;
-		loop_game();
+		if (init == false){
+			init = true;
+			loop_game();
+		}
+		break;
+	case GLFW_KEY_SPACE:
+		if (init == true){
+			dead = 0;
+			finished = 0;
+			loop_game();
+		}
 		break;
 	default:
 		break;

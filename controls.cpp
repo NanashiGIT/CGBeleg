@@ -213,25 +213,25 @@ void computeMatricesFromInputs(bool free_flight){
 
 
 	// Move forward
-	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
 		if (free_flight)
 			position2 += direction * deltaTime * speed;
 		else
 			position2 += (glm::vec3(1.0f, 0.0f, 1.0f)* direction) * deltaTime * speed;
 	}
 	// Move backward
-	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
 		if (free_flight)
 			position2 -= direction * deltaTime * speed; 
 		else
 			position2 -= (glm::vec3(1.0f,0.0f,1.0f)* direction) * deltaTime * speed;
 	}
 	// Strafe right
-	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
 		position2 += right * deltaTime * speed;
 	}
 	// Strafe left
-	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
+	if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
 		position2 -= right * deltaTime * speed;
 	}
 
