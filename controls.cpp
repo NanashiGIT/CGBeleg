@@ -36,7 +36,6 @@ float horizontalAngle = 3.14f;
 float verticalAngle = 0.0f;
 // Initial Field of View
 float initialFoV = 75.0f;
-
 float verticalAngle_LowerLimit = -1.0f;
 float verticalAngle_UpperLimit = 1.3f;
 float speed = 1.0f; // 3 units / second
@@ -45,9 +44,11 @@ bool check[2];
 vector< vector<int> > levelControls;
 int dimensionControls = 0;
 
-void readLevelControls(){
+void readLevelControls(int lvlCount){
+	levelControls.clear();
 	string line;
-	ifstream myfile("level2.txt");
+	string filename = "level" + to_string(lvlCount) + ".txt";
+	ifstream myfile(filename);
 	if (myfile.is_open())
 	{
 		int i = 0;
@@ -110,7 +111,7 @@ int checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
 	int j = cBlock.x;
 	int i = cBlock.y;
-	//cout << j << i << endl;
+	cout << j << i << endl;
 	float posx, posz;
 	
 	//oben
@@ -160,9 +161,11 @@ int checkBoundary(glm::vec2 cBlock){
 	return true;
 }
 
-void computeMatricesFromInputs(bool free_flight){
+void computeMatricesFromInputs(bool restartMerker){
 	// glfwGetTime is called only once, the first time this function is called
+	
 	static double lastTime = glfwGetTime();
+	
 	glm::vec3 position_old = position2;
 	glm::vec2 currentBlock;
 	
@@ -171,7 +174,8 @@ void computeMatricesFromInputs(bool free_flight){
 	// Compute time difference between current and last frame
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
-
+	if (restartMerker == true)
+		deltaTime = 0;
 	// Get mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -214,17 +218,11 @@ void computeMatricesFromInputs(bool free_flight){
 
 	// Move forward
 	if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
-		if (free_flight)
-			position2 += direction * deltaTime * speed;
-		else
-			position2 += (glm::vec3(1.0f, 0.0f, 1.0f)* direction) * deltaTime * speed;
+		position2 += (glm::vec3(1.0f, 0.0f, 1.0f)* direction) * deltaTime * speed;
 	}
 	// Move backward
 	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
-		if (free_flight)
-			position2 -= direction * deltaTime * speed; 
-		else
-			position2 -= (glm::vec3(1.0f,0.0f,1.0f)* direction) * deltaTime * speed;
+		position2 -= (glm::vec3(1.0f,0.0f,1.0f)* direction) * deltaTime * speed;
 	}
 	// Strafe right
 	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
@@ -264,6 +262,7 @@ void computeMatricesFromInputs(bool free_flight){
 	position3 = position2 + objectDirection;
 		cout<<"(" << position3.x << "," << position3.z << ")/(" << position2.x << "," << position2.z <<")" <<endl;
 }
+
 
 glm::vec3 getPosition(){
 	return position2;

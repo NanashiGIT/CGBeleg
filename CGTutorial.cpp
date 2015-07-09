@@ -52,15 +52,17 @@ glm::mat4 Model;
 GLuint programID;
 GLuint textures[8];
 glm::vec3 position;
-bool free_cam = 0;
+int levelCount = 1;
 bool dead = 0;
 bool finished = 0;
+bool restart = 0;
 bool init = false;
 glm::vec2 currentBlock;
 vector< vector<int> > level;
 int dimension = 0;
 void loop_game();
 void loop_menu();
+int main();
 float x = 0.0f, y = 0.0f, z=0.0f;
 int a=1,b=0,c=0;
 int textureSelector = 0;
@@ -83,14 +85,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_Z:
 		z += 5.0f;
 		break;
-	case GLFW_KEY_F1:
-		free_cam = true;
-		break;
-	case GLFW_KEY_F2:
-		free_cam = false;
-		break;
 	case GLFW_KEY_ENTER:
 		if (init == false){
+			finished = 0;
 			init = true;
 			loop_game();
 		}
@@ -122,8 +119,10 @@ void sendMVP()
 }
 
 static void readLevel(){
+	level.clear();
 	string line;
-	ifstream myfile("level2.txt");
+	string filename = "level" + to_string(levelCount) + ".txt";
+	ifstream myfile(filename);
 	if (myfile.is_open())
 	{
 		int i = 0;
@@ -143,7 +142,7 @@ static void readLevel(){
 		myfile.close();
 	}
 
-	else cout << "Unable to open file";
+	else cout << "Level konnte nicht gefunden werden!";
 }
 
 void drawCS(){
@@ -274,8 +273,16 @@ void triggerTrap(){
 
 void triggerFinish(){
 	cout << "FINISH !" << endl;
-	finished = 1;
-	loop_menu();
+	if (levelCount < 2){
+		levelCount++;
+		loop_game();
+	}
+	else{
+		finished = 1;
+		restart = 1;
+		loop_menu();
+	}
+	
 }
 
 void loop_menu(){
@@ -301,8 +308,12 @@ void loop_menu(){
 			glm::vec3(0.0f, 1.0f, 0.0f)          // Head is up (set to 0,-1,0 to look upside-down)
 			);
 		Projection = glm::perspective(75.0f, 4.0f / 3.0f, 0.1f, 100.0f);
-		if (finished == 1)
+		if (finished == 1){
 			glBindTexture(GL_TEXTURE_2D, textures[7]);
+			init = false;
+			levelCount = 1;
+			level.clear();
+		}
 		else if (dead == 1)
 			glBindTexture(GL_TEXTURE_2D, textures[6]);
 		else if (dead == 0)
@@ -321,6 +332,8 @@ void loop_menu(){
 }
 
 void loop_game(){
+	readLevel();
+	readLevelControls(levelCount);
 	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
 	// Shader auch benutzen !
@@ -341,7 +354,9 @@ void loop_game(){
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Compute the MVP matrix from keyboard and mouse input
-		computeMatricesFromInputs(free_cam);
+		computeMatricesFromInputs(restart);
+		if (restart == true)
+			restart = false;
 		Projection = getProjectionMatrix();
 		View = getViewMatrix();
 		glm::mat4 MVP = Projection * View * Model;
@@ -375,59 +390,59 @@ void loop_game(){
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-	readLevel();
-	readLevelControls();
+	
 	// Initialise GLFW
-	if (!glfwInit())
-	{
-		fprintf(stderr, "Failed to initialize GLFW\n");
-		exit(EXIT_FAILURE);
-	}
+		if (!glfwInit())
+		{
+			fprintf(stderr, "Failed to initialize GLFW\n");
+			exit(EXIT_FAILURE);
+		}
 
-	// Fehler werden auf stderr ausgegeben, s. o.
-	glfwSetErrorCallback(error_callback);
+		// Fehler werden auf stderr ausgegeben, s. o.
+		glfwSetErrorCallback(error_callback);
 
-	// Open a window and create its OpenGL context
-	// glfwWindowHint vorher aufrufen, um erforderliche Resourcen festzulegen
-	window = glfwCreateWindow(1024, // Breite
-		768,  // Hoehe
-		"CG Beleg", // Ueberschrift
-		NULL,  // windowed mode
-		NULL); // shared window
+		// Open a window and create its OpenGL context
+		// glfwWindowHint vorher aufrufen, um erforderliche Resourcen festzulegen
+		window = glfwCreateWindow(1024, // Breite
+			768,  // Hoehe
+			"CG Beleg", // Ueberschrift
+			NULL,  // windowed mode
+			NULL); // shared window
 
-	if (!window)
-	{
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
+		if (!window)
+		{
+			glfwTerminate();
+			exit(EXIT_FAILURE);
+		}
 
-	// Make the window's context current (wird nicht automatisch gemacht)
-	glfwMakeContextCurrent(window);
+		// Make the window's context current (wird nicht automatisch gemacht)
+		glfwMakeContextCurrent(window);
 
-	// Initialize GLEW
-	// GLEW ermöglicht Zugriff auf OpenGL-API > 1.1
-	glewExperimental = true; // Needed for core profile
+		// Initialize GLEW
+		// GLEW ermöglicht Zugriff auf OpenGL-API > 1.1
+		glewExperimental = true; // Needed for core profile
 
-	if (glewInit() != GLEW_OK)
-	{
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		return -1;
-	}
+		if (glewInit() != GLEW_OK)
+		{
+			fprintf(stderr, "Failed to initialize GLEW\n");
+			return -1;
+		}
 
-	// Auf Keyboard-Events reagieren
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-	glfwSetCursorPos(window, 1024 / 2, 768 / 2);
-	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	glDepthFunc(GL_LESS);
-	// Dark blue background
-	glClearColor(100.0f, 100.0f, 100.0f, 0.2f);
-	// Cull triangles which normal is not towards the camera
-	glEnable(GL_CULL_FACE);
+		// Auf Keyboard-Events reagieren
+		glfwSetKeyCallback(window, key_callback);
+		glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+		glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+		// Enable depth test
+		glEnable(GL_DEPTH_TEST);
+		// Accept fragment if it closer to the camera than the former one
+		glDepthFunc(GL_LESS);
+		// Dark blue background
+		glClearColor(100.0f, 100.0f, 100.0f, 0.2f);
+		// Cull triangles which normal is not towards the camera
+		glEnable(GL_CULL_FACE);
+	
 	// Create and compile our GLSL program from the shaders
 	programID = LoadShaders("StandardShading.vertexshader", "StandardShading-menu.fragmentshader");
 
