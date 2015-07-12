@@ -308,3 +308,116 @@ void drawSphere(GLuint slats, GLuint slongs)
 	// Draw the triangles !
 	glDrawArrays(GL_QUAD_STRIP, 0, 2 * (lats + 1) * (longs + 1)); 
 }
+
+/*
+* http://www.joelcontrol.com/Graphics/cylinder.cpp
+*/
+
+//one radius cylinder
+void drawCylinder_1(float radius, float height, float theta)
+{
+
+	//M_PI = 3.14159265358979323846;
+	float radian, r, h, t, t_normal, radian_normal;
+
+	/* set the cylinder to be drawn using lines (filled) */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	/* draw the upper circle */
+	r = radius; h = height; t = theta;
+	glBegin(GL_TRIANGLE_FAN);
+	glNormal3f(0.0, 1.0, 0.0);
+	glVertex3f(0.0, h, 0.0);
+	glVertex3f(r, h, 0.0);
+	while (t <= 360) {
+		radian = M_PI * t / 180.0;
+		glVertex3f(r * cos(radian), h, r * sin(radian));
+		t = t + theta;
+	}
+	glEnd();
+
+	/* draw the lower circle */
+	r = radius; h = height; t = theta;
+	glBegin(GL_TRIANGLE_FAN);
+	glNormal3f(0.0, -1.0, 0.0);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(r, 0.0, 0.0);
+	while (t <= 360) {
+		radian = M_PI * t / 180.0;
+		glVertex3f(r * cos(radian), 0.0, r * sin(radian));
+		t = t + theta;
+	}
+	glEnd();
+
+	/* draw the body */
+	r = radius; h = height; t = theta;
+	glBegin(GL_QUAD_STRIP);
+
+	glVertex3f(r, 0.0, 0.0);
+	glVertex3f(r, h, 0.0);
+	while (t <= 360) {
+		t_normal = t - theta / 2;
+		radian = M_PI * t / 180.0;
+		radian_normal = M_PI * t_normal / 180.0;
+		glNormal3f(cos(radian_normal), 0.0, sin(radian_normal));
+
+		radian = M_PI * t / 180.0;
+		glVertex3f(r * cos(radian), 0.0, r * sin(radian));
+		glVertex3f(r * cos(radian), h, r * sin(radian));
+		t = t + theta;
+	}
+	glEnd();
+}
+
+//two radius cylinder
+void drawCylinder_2(float radiusBottom, float radiusTop, float height, float theta)
+{
+
+	float radian, r, h, t, t_normal, radian_normal;
+
+	/* set the cylinder to be drawn filled */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	/* draw the upper circle */
+	r = radiusTop; h = height; t = theta;
+	glBegin(GL_TRIANGLE_FAN);
+	glNormal3f(0.0, 1.0, 0.0);
+	glVertex3f(0.0, h, 0.0);
+	glVertex3f(radiusTop, h, 0.0);
+	do {
+		radian = M_PI * t / 180.0;
+		glVertex3f(radiusTop * cos(radian), h, radiusTop * sin(radian));
+		t = t + theta;
+	} while (t <= 360);
+	glEnd();
+
+	/* draw the lower circle */
+	r = radiusBottom; h = height; t = theta;
+	glBegin(GL_TRIANGLE_FAN);
+	glNormal3f(0.0, -1.0, 0.0);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(radiusBottom, 0.0, 0.0);
+	do {
+		radian = M_PI * t / 180.0;
+		glVertex3f(radiusBottom * cos(radian), 0.0, radiusBottom * sin(radian));
+		t = t + theta;
+	} while (t <= 360);
+	glEnd();
+
+	/* draw the body */
+	h = height; t = theta;
+	glBegin(GL_QUAD_STRIP);
+	glVertex3f(radiusBottom, 0.0, 0.0);
+	glVertex3f(radiusTop, h, 0.0);
+	do {
+		t_normal = t - theta / 2;
+		radian = M_PI * t / 180.0;
+		radian_normal = M_PI * t_normal / 180.0;
+		glNormal3f(cos(radian_normal), 0.0, sin(radian_normal));
+		glVertex3f(radiusBottom * cos(radian), 0.0, radiusBottom * sin(radian));
+		glVertex3f(radiusTop * cos(radian), h, radiusTop * sin(radian));
+		t = t + theta;
+	} while (t <= 360);
+	glEnd();
+}

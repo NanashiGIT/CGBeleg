@@ -10,9 +10,7 @@
 
 // Include GLEW
 #include <GL/glew.h>
-#include <stdlib.h>
 
-#include <GL/glut.h>
 // Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
@@ -239,7 +237,7 @@ static void drawLevel(){
 	textureSelector = 0;
 }
 
-void drawSeg(glm::vec3 v1, glm::vec3 v2){
+void drawSeg(glm::vec3 v1){
 	glm::mat4 Save = Model;
 	glm::mat4 viewMatrix = getViewMatrix();
 	glm::mat4 inversed;
@@ -255,15 +253,23 @@ void drawSeg(glm::vec3 v1, glm::vec3 v2){
 	inversed[0][3] = 0;
 	inversed[1][3] = 0;
 	inversed[2][3] = 0;
-	glBindTexture(GL_TEXTURE_2D, textures[2]);
+
 	Model = glm::translate(Model, v1);
 	Model = Model * inversed;
-	Model = glm::scale(Model, glm::vec3(0.02f, 0.1f, 0.02f));
+	Model = glm::scale(Model, glm::vec3(0.02f, 0.02f, 0.02f));
 	sendMVP();
-	drawCube();
+	drawSphere(15, 15);
 	Model = Save;
-}
 
+	Model = glm::translate(Model, glm::vec3(v1.x, v1.y-0.12f, v1.z));
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.02f, 0.1f, 0.02f));
+	glBindTexture(GL_TEXTURE_2D, textures[3]);
+	sendMVP();
+	drawCylinder_2(0.0f, 1.0f, 1.0f, 3.14f);
+	Model = Save;
+
+}
 
 void triggerTrap(){
 	cout << "TRAP !" << endl;
@@ -364,10 +370,10 @@ void loop_game(){
 		Model = Save;
 		drawLevel();
 
-		drawSeg(getPositionWithDirection(), getPosition());
+		drawSeg(getPositionWithDirection());
 		//drawSeg(getPositionTest());
 
-		glm::vec4 lightPos = glm::vec4(getPosition(), 1);
+		glm::vec4 lightPos = glm::vec4(getPositionWithDirection(), 1);
 		glUniform3f(glGetUniformLocation(programID, "LightPosition_worldspace"), lightPos.x, lightPos.y, lightPos.z);
 
 		Model = Save;
