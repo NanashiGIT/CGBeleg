@@ -200,7 +200,7 @@ void computeMatricesFromInputs(bool restartMerker){
 	
 	glm::vec3 objectDirection(
 		sin(horizontalAngle)/4,
-		sin(verticalAngle)/10,
+		sin(verticalAngle)/8,
 		cos(horizontalAngle)/4
 		);
 

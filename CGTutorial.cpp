@@ -48,7 +48,7 @@ glm::mat4 Projection;
 glm::mat4 View;
 glm::mat4 Model;
 GLuint programID;
-GLuint textures[8];
+GLuint textures[9];
 glm::vec3 position;
 int levelCount = 1;
 bool dead = 0;
@@ -264,12 +264,13 @@ void drawSeg(glm::vec3 v1){
 	Model = glm::translate(Model, glm::vec3(v1.x, v1.y-0.12f, v1.z));
 	Model = Model * inversed;
 	Model = glm::scale(Model, glm::vec3(0.02f, 0.1f, 0.02f));
-	glBindTexture(GL_TEXTURE_2D, textures[3]);
+	glBindTexture(GL_TEXTURE_2D, textures[8]);
 	sendMVP();
-	drawCylinder_2(0.0f, 1.0f, 1.0f, 3.14f);
+	drawCube();
 	Model = Save;
 
 }
+
 
 void triggerTrap(){
 	cout << "TRAP !" << endl;
@@ -457,12 +458,13 @@ int main()
 
 	textures[0] = loadBMP_custom("stones.bmp");
 	textures[1] = loadBMP_custom("trap_beartrap.bmp");
-	textures[2] = loadBMP_custom("start.bmp");
+	textures[2] = loadBMP_custom("start1.bmp");
 	textures[3] = loadBMP_custom("finish.bmp");
 	textures[4] = loadBMP_custom("trap_hole.bmp");
 	textures[5] = loadBMP_custom("menu.bmp");
 	textures[6] = loadBMP_custom("death-screen.bmp");
 	textures[7] = loadBMP_custom("finish-screen.bmp");
+	textures[8] = loadBMP_custom("wood.bmp");
 
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
