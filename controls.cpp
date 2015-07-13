@@ -35,6 +35,7 @@ glm::mat4 getProjectionMatrix(){
 // Initial position : on +Z
 glm::vec3 position2; 
 glm::vec3 position3;
+glm::vec3* bodyPositions = new glm::vec3[4];		// [0] = Linker Arm, [1] = Rechter Arm, [2] = Linkes Bein, [3] = Rechtes Bein
 // Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
 // Initial vertical angle : none
@@ -204,10 +205,35 @@ void computeMatricesFromInputs(bool restartMerker){
 	);
 	
 	glm::vec3 objectDirection(
-		cos(verticalAngle) * sin(horizontalAngle -0.7) /4,
+		sin(horizontalAngle -0.8) /4,
 		sin(verticalAngle) /4,
-		cos(verticalAngle) * cos(horizontalAngle - 0.7) / 4
+		cos(horizontalAngle - 0.8) / 4
 		);
+
+	glm::vec3 leftArmDirection(
+		sin(horizontalAngle + 1.6) / 4,
+		sin(verticalAngle) / 4,
+		cos(horizontalAngle + 1.6) / 4
+		);
+	//-0.9
+	glm::vec3 rightArmDirection(
+		sin(horizontalAngle - 1.2) / 6,
+		sin(verticalAngle) / 4,
+		cos(horizontalAngle - 1.2) / 6
+		);
+	//1.6
+	glm::vec3 leftLegDirection(
+		sin(horizontalAngle + 2.3) / 4,
+		sin(verticalAngle) / 4,
+		cos(horizontalAngle + 2.3) / 4
+		);
+
+	glm::vec3 rightLegDirection(
+		sin(horizontalAngle - 2.3) / 4,
+		sin(verticalAngle) / 4,
+		cos(horizontalAngle -2.3) / 4
+		);
+
 	cout << "vertical: " << verticalAngle << "horizontal: " << horizontalAngle << endl;
 	// Right vector
 	glm::vec3 right = glm::vec3(
@@ -272,8 +298,23 @@ void computeMatricesFromInputs(bool restartMerker){
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
 	objectDirection.y = 0;
-	position3 = position2 + objectDirection;
+	rightArmDirection.y = 0;
+	leftLegDirection.y = 0;
+	rightLegDirection.y = 0;
+	position3.x = position2.x + objectDirection.x / 1.4;
+	position3.z = position2.z + objectDirection.z / 1.4;
 	position3.y = (position2.y - 0.05) + objectDirection.y;
+	bodyPositions[0] = position2 + leftArmDirection;
+	bodyPositions[0].y = (position2.y - 0.05) + leftArmDirection.y;
+	bodyPositions[1] = position2 + rightArmDirection;
+	bodyPositions[1].y = (position2.y - 0.05) + rightArmDirection.y;
+	bodyPositions[2].x = position2.x + (leftLegDirection.x / 2.7);
+	bodyPositions[2].z = position2.z + (leftLegDirection.z / 2.7);
+	bodyPositions[2].y = (position2.y - 0.5) + leftLegDirection.y;
+	bodyPositions[3].x = position2.x + (rightLegDirection.x / 2.7);
+	bodyPositions[3].z = position2.z + (rightLegDirection.z / 2.7);
+	bodyPositions[3].y = (position2.y - 0.5) + rightLegDirection.y;
+	//bodyPositions[1].x = (position2.x + 0.1) + rightArmDirection.x;
 	//position3 = position2 + direction/2;
 		//cout<<"(" << position3.x << "," << position3.z << ")/(" << position2.x << "," << position2.z <<")" <<endl;
 }
@@ -283,6 +324,11 @@ glm::vec3 getPosition(){
 	return position2;
 }
 
+
 glm::vec3 getPositionWithDirection(){
 	return position3;
+}
+
+glm::vec3* getBodyPositions(){
+	return bodyPositions;
 }
