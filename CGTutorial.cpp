@@ -313,6 +313,17 @@ void drawSeg(glm::vec3 v1){
 	drawCube();
 	Model = Save;
 
+	Model = glm::translate(Model, glm::vec3(v1.x, v1.y-0.2f, v1.z));
+	Model = Model * inversed;
+	Model = glm::rotate(Model, 90.0f, glm::vec3(1,0,0));
+	Model = glm::scale(Model, glm::vec3(0.05f, 0.15f, 0.05f));
+
+	//Model = glm::mat4(1.0f);
+	
+	glBindTexture(GL_TEXTURE_2D, textures[3]);
+	sendMVP();
+	drawCube();
+	Model = Save;
 }
 
 
