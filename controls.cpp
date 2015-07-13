@@ -17,11 +17,16 @@ using namespace glm;
 using namespace std;
 
 glm::mat4 ViewMatrix;
+glm::mat4 ViewMatrixObj;
 glm::mat4 ProjectionMatrix;
 
 glm::mat4 getViewMatrix(){
 	return ViewMatrix;
 }
+
+glm::mat4 getViewMatrixObj(){
+	return ViewMatrixObj;
+} 
 glm::mat4 getProjectionMatrix(){
 	return ProjectionMatrix;
 }
@@ -199,9 +204,9 @@ void computeMatricesFromInputs(bool restartMerker){
 	);
 	
 	glm::vec3 objectDirection(
-		cos(verticalAngle) * sin(horizontalAngle -0.6) /4,
+		cos(verticalAngle) * sin(horizontalAngle -0.7) /4,
 		sin(verticalAngle) /4,
-		cos(verticalAngle) * cos(horizontalAngle - 0.6) / 4
+		cos(verticalAngle) * cos(horizontalAngle - 0.7) / 4
 		);
 	cout << "vertical: " << verticalAngle << "horizontal: " << horizontalAngle << endl;
 	// Right vector
@@ -257,8 +262,16 @@ void computeMatricesFromInputs(bool restartMerker){
 								up                  // Head is up (set to 0,-1,0 to look upside-down)
 						   );
 
+	direction.y = 0;
+	ViewMatrixObj	= glm::lookAt(
+								position2,           // Camera is here
+								position2 + direction, // and looks here : at the same position, plus "direction"
+								glm::vec3(0.0,1.0,0.0)                  // Head is up (set to 0,-1,0 to look upside-down)
+							);
+
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
+	objectDirection.y = 0;
 	position3 = position2 + objectDirection;
 	position3.y = (position2.y - 0.05) + objectDirection.y;
 	//position3 = position2 + direction/2;

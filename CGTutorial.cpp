@@ -241,15 +241,16 @@ static void drawLevel(){
 	textureSelector = 0;
 }
 
-void drawSeg(glm::vec3 v1, glm::vec3 camPos){
+void drawSeg(glm::vec3 v1){
 	glm::mat4 Save = Model;
-	glm::mat4 viewMatrix = getViewMatrix();
+	glm::mat4 viewMatrix = getViewMatrixObj();
 	glm::mat4 inversed;
 	for (int i = 0; i < 3; i++){
 		for (int j = 0; j < 3; j++){
 			inversed[i][j] = viewMatrix[j][i];
 		}
 	}
+	
 	inversed[3][0] = 0;
 	inversed[3][1] = 0;
 	inversed[3][2] = 0;
@@ -375,7 +376,7 @@ void loop_game(){
 		Model = Save;
 		drawLevel();
 
-		drawSeg(getPositionWithDirection(), getPosition());
+		drawSeg(getPositionWithDirection());
 		//drawSeg(getPositionTest());
 
 		glm::vec4 lightPos = glm::vec4(getPositionWithDirection(), 1);
