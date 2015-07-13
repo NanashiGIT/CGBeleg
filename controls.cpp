@@ -199,11 +199,11 @@ void computeMatricesFromInputs(bool restartMerker){
 	);
 	
 	glm::vec3 objectDirection(
-		sin(horizontalAngle)/4,
-		sin(verticalAngle)/8,
-		cos(horizontalAngle)/4
+		cos(verticalAngle) * sin(horizontalAngle -0.6) /4,
+		sin(verticalAngle) /4,
+		cos(verticalAngle) * cos(horizontalAngle - 0.6) / 4
 		);
-
+	cout << "vertical: " << verticalAngle << "horizontal: " << horizontalAngle << endl;
 	// Right vector
 	glm::vec3 right = glm::vec3(
 		sin(horizontalAngle - 3.14f/2.0f), 
@@ -260,6 +260,8 @@ void computeMatricesFromInputs(bool restartMerker){
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
 	position3 = position2 + objectDirection;
+	position3.y = (position2.y - 0.05) + objectDirection.y;
+	//position3 = position2 + direction/2;
 		//cout<<"(" << position3.x << "," << position3.z << ")/(" << position2.x << "," << position2.z <<")" <<endl;
 }
 

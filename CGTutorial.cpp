@@ -241,7 +241,7 @@ static void drawLevel(){
 	textureSelector = 0;
 }
 
-void drawSeg(glm::vec3 v1){
+void drawSeg(glm::vec3 v1, glm::vec3 camPos){
 	glm::mat4 Save = Model;
 	glm::mat4 viewMatrix = getViewMatrix();
 	glm::mat4 inversed;
@@ -375,7 +375,7 @@ void loop_game(){
 		Model = Save;
 		drawLevel();
 
-		drawSeg(getPositionWithDirection());
+		drawSeg(getPositionWithDirection(), getPosition());
 		//drawSeg(getPositionTest());
 
 		glm::vec4 lightPos = glm::vec4(getPositionWithDirection(), 1);
