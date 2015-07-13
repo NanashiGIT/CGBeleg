@@ -273,13 +273,6 @@ void drawSeg(glm::vec3 v1){
 	drawCube();
 	Model = Save;
 
-	Model = glm::translate(Model, v1);
-	Model = Model * inversed;
-	Model = glm::scale(Model, glm::vec3(0.02f, 0.02f, 0.02f));
-	sendMVP();
-	drawSphere(15, 15);
-	Model = Save;
-
 }
 
 

@@ -242,31 +242,31 @@ static void createSphere()
               GLfloat x = cos(lng);
               GLfloat y = sin(lng);
 
-			  sphereNormalBufferData[index] = x * zr0;
+			  //sphereNormalBufferData[index] = x * zr0;
 			  sphereVertexBufferData[index++] = x * zr0;
-			  sphereNormalBufferData[index] = y * zr0;
+			  //sphereNormalBufferData[index] = y * zr0;
 			  sphereVertexBufferData[index++] = y * zr0;
-			  sphereNormalBufferData[index] = z0;
+			  //sphereNormalBufferData[index] = z0;
 			  sphereVertexBufferData[index++] = z0;
-			  sphereNormalBufferData[index] = x * zr1;
+			  //sphereNormalBufferData[index] = x * zr1;
 			  sphereVertexBufferData[index++] = x * zr1;
-			  sphereNormalBufferData[index] = y * zr1;
+			  //sphereNormalBufferData[index] = y * zr1;
 			  sphereVertexBufferData[index++] = y * zr1;
-			  sphereNormalBufferData[index] = z1;
+			  //sphereNormalBufferData[index] = z1;
 			  sphereVertexBufferData[index++] = z1;
           }
      }
 
 	GLuint vertexbuffer;
-	GLuint normalbuffer;
+	//GLuint normalbuffer;
 	
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * (lats + 1) * (longs + 1), sphereVertexBufferData, GL_STATIC_DRAW);
 
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * (lats + 1) * (longs + 1), sphereNormalBufferData, GL_STATIC_DRAW);
+	//glGenBuffers(1, &normalbuffer);
+	//glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * (lats + 1) * (longs + 1), sphereNormalBufferData, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); // Kein Disable ausführen !
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -280,7 +280,7 @@ static void createSphere()
 	);
 
 	// 2nd attribute buffer : normals
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	/*glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
 	glEnableVertexAttribArray(2); // Kein Disable ausführen !
 	glVertexAttribPointer(
 			2,                                // attribute. No particular reason for 2, but must match the layout in the shader.
@@ -290,7 +290,7 @@ static void createSphere()
 			0,                                // stride
 			(void*)0                          // array buffer offset
 	);
-
+	*/
 	glBindVertexArray(0);
 }
 
