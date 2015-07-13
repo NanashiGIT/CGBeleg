@@ -173,7 +173,7 @@ static void drawLevel(){
 
 	for (int i = 1; i < dimension - 1; i++){
 		for (int j = 1; j < dimension - 1; j++){
-			if (level[i][j] == 1 || level[i][j] == 0){
+			if (level[i][j] == 1 || level[i][j] == 0 || level[i][j] == 3){
 				glBindTexture(GL_TEXTURE_2D, textures[0]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
@@ -227,6 +227,10 @@ static void drawLevel(){
 
 	for (int i = 1; i < dimension - 1; i++){
 		for (int j = 1; j < dimension - 1; j++){
+			if (level[i][j] == 3)
+				glBindTexture(GL_TEXTURE_2D, textures[2]);
+			else
+				glBindTexture(GL_TEXTURE_2D, textures[0]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*1.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
@@ -267,6 +271,13 @@ void drawSeg(glm::vec3 v1){
 	glBindTexture(GL_TEXTURE_2D, textures[8]);
 	sendMVP();
 	drawCube();
+	Model = Save;
+
+	Model = glm::translate(Model, v1);
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.02f, 0.02f, 0.02f));
+	sendMVP();
+	drawSphere(15, 15);
 	Model = Save;
 
 }
@@ -458,7 +469,7 @@ int main()
 
 	textures[0] = loadBMP_custom("stones.bmp");
 	textures[1] = loadBMP_custom("trap_beartrap.bmp");
-	textures[2] = loadBMP_custom("start1.bmp");
+	textures[2] = loadBMP_custom("start.bmp");
 	textures[3] = loadBMP_custom("finish.bmp");
 	textures[4] = loadBMP_custom("trap_hole.bmp");
 	textures[5] = loadBMP_custom("menu.bmp");
