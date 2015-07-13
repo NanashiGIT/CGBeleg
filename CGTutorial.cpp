@@ -48,7 +48,7 @@ glm::mat4 Projection;
 glm::mat4 View;
 glm::mat4 Model;
 GLuint programID;
-GLuint textures[9];
+GLuint textures[10];
 glm::vec3 position;
 int levelCount = 1;
 bool dead = 0;
@@ -60,6 +60,7 @@ vector< vector<int> > level;
 int dimension = 0;
 void loop_game();
 void loop_menu();
+void loadTextures();
 int main();
 float x = 0.0f, y = 0.0f, z=0.0f;
 int a=1,b=0,c=0;
@@ -245,6 +246,12 @@ void drawSeg(glm::vec3 v1){
 	glm::mat4 Save = Model;
 	glm::mat4 viewMatrix = getViewMatrixObj();
 	glm::mat4 inversed;
+	glm::vec3* bodyPositions = getBodyPositions();
+	glm::vec3 leftArm = bodyPositions[0];
+	glm::vec3 rightArm = bodyPositions[1];
+	glm::vec3 leftLeg = bodyPositions[2];
+	glm::vec3 rightLeg = bodyPositions[3];
+
 	for (int i = 0; i < 3; i++){
 		for (int j = 0; j < 3; j++){
 			inversed[i][j] = viewMatrix[j][i];
@@ -266,9 +273,41 @@ void drawSeg(glm::vec3 v1){
 	drawSphere(15, 15);
 	Model = Save;
 
-	Model = glm::translate(Model, glm::vec3(v1.x, v1.y-0.12f, v1.z));
+	Model = glm::translate(Model, glm::vec3(v1.x, v1.y - 0.12f, v1.z));
 	Model = Model * inversed;
-	Model = glm::scale(Model, glm::vec3(0.02f, 0.1f, 0.02f));
+	Model = glm::scale(Model, glm::vec3(0.01f, 0.1f, 0.01f));
+	glBindTexture(GL_TEXTURE_2D, textures[8]);
+	sendMVP();
+	drawCube();
+	Model = Save;
+
+	Model = glm::translate(Model, glm::vec3(leftArm.x, leftArm.y, leftArm.z));
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.02f, 0.08f, 0.02f));
+	glBindTexture(GL_TEXTURE_2D, textures[9]);
+	sendMVP();
+	drawCube();
+	Model = Save;
+	
+	Model = glm::translate(Model, glm::vec3(rightArm.x, rightArm.y - 0.12f, rightArm.z));
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.02f, 0.02f, 0.08f));
+	glBindTexture(GL_TEXTURE_2D, textures[9]);
+	sendMVP();
+	drawCube();
+	Model = Save;
+
+	Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y - 0.12f, leftLeg.z));
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.04f, 0.25f, 0.04f));
+	glBindTexture(GL_TEXTURE_2D, textures[8]);
+	sendMVP();
+	drawCube();
+	Model = Save;
+
+	Model = glm::translate(Model, glm::vec3(rightLeg.x, rightLeg.y - 0.12f, rightLeg.z));
+	Model = Model * inversed;
+	Model = glm::scale(Model, glm::vec3(0.04f, 0.25f, 0.04f));
 	glBindTexture(GL_TEXTURE_2D, textures[8]);
 	sendMVP();
 	drawCube();
@@ -295,6 +334,34 @@ void triggerFinish(){
 		loop_menu();
 	}
 	
+}
+
+
+void loadTextures(){
+	if (levelCount == 1){
+		textures[0] = loadBMP_custom("stones.bmp");
+		textures[1] = loadBMP_custom("trap_beartrap.bmp");
+		textures[2] = loadBMP_custom("start.bmp");
+		textures[3] = loadBMP_custom("finish.bmp");
+		textures[4] = loadBMP_custom("trap_hole.bmp");
+		textures[5] = loadBMP_custom("menu.bmp");
+		textures[6] = loadBMP_custom("death-screen.bmp");
+		textures[7] = loadBMP_custom("finish-screen.bmp");
+		textures[8] = loadBMP_custom("wood.bmp");
+		textures[9] = loadBMP_custom("arm.bmp");
+	}
+	else if(levelCount == 2){
+		textures[0] = loadBMP_custom("level2_walls.bmp");
+		textures[1] = loadBMP_custom("trap_beartrap.bmp");
+		textures[2] = loadBMP_custom("start.bmp");
+		textures[3] = loadBMP_custom("finish.bmp");
+		textures[4] = loadBMP_custom("trap_hole.bmp");
+		textures[5] = loadBMP_custom("menu.bmp");
+		textures[6] = loadBMP_custom("death-screen.bmp");
+		textures[7] = loadBMP_custom("finish-screen.bmp");
+		textures[8] = loadBMP_custom("wood.bmp");
+		textures[9] = loadBMP_custom("arm.bmp");
+	}
 }
 
 void loop_menu(){
@@ -347,7 +414,7 @@ void loop_game(){
 	readLevel();
 	readLevelControls(levelCount);
 	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
-
+	loadTextures();
 	// Shader auch benutzen !
 	glUseProgram(programID);
 
@@ -461,15 +528,7 @@ int main()
 	// Shader auch benutzen !
 	glUseProgram(programID);
 
-	textures[0] = loadBMP_custom("stones.bmp");
-	textures[1] = loadBMP_custom("trap_beartrap.bmp");
-	textures[2] = loadBMP_custom("start.bmp");
-	textures[3] = loadBMP_custom("finish.bmp");
-	textures[4] = loadBMP_custom("trap_hole.bmp");
-	textures[5] = loadBMP_custom("menu.bmp");
-	textures[6] = loadBMP_custom("death-screen.bmp");
-	textures[7] = loadBMP_custom("finish-screen.bmp");
-	textures[8] = loadBMP_custom("wood.bmp");
+	loadTextures();
 
 	glActiveTexture(GL_TEXTURE0);
 	glUniform1i(glGetUniformLocation(programID, "myTextureSampler"), 0);
