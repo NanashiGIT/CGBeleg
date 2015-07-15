@@ -17,20 +17,27 @@ using namespace glm;
 using namespace std;
 
 glm::mat4 ViewMatrix;
+glm::mat4 inversedView;
 glm::mat4 ViewMatrixObj;
 glm::mat4 ProjectionMatrix;
+int fps = 0;
 
 glm::mat4 getViewMatrix(){
 	return ViewMatrix;
 }
 
-glm::mat4 getViewMatrixObj(){
-	return ViewMatrixObj;
-} 
+
 glm::mat4 getProjectionMatrix(){
 	return ProjectionMatrix;
 }
 
+glm::mat4 getInversedView(){
+	return inversedView;
+}
+
+int getFPS(){
+	return fps;
+}
 
 // Initial position : on +Z
 glm::vec3 position2; 
@@ -49,6 +56,9 @@ float mouseSpeed = 0.005f;
 bool check[2];
 vector< vector<int> > levelControls;
 int dimensionControls = 0;
+float fpsTime = 0;
+int frameCount = 0;
+
 
 void readLevelControls(int lvlCount){
 	levelControls.clear();
@@ -117,17 +127,15 @@ int checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
 	int j = cBlock.x;
 	int i = cBlock.y;
-	cout << j << i << endl;
+	float distance = 0;
 	float posx, posz;
 	
 	//oben
 	if (levelControls[i-1][j] == 1){
 		posx = groesse*j;
 		posz = groesse*(i-1);
-		if (position2.z < posz + 0.65) {
-			cout << " ERROR OBEN "<< endl;
+		if (position2.z < posz + 0.77) {
 			check[1] = false;
-			return 0;
 		}
 	}
 
@@ -136,10 +144,8 @@ int checkBoundary(glm::vec2 cBlock){
 		posx = groesse*j;
 		posz = groesse*(i + 1);
 
-		if (position2.z > posz - 0.65) {
-			cout << " ERROR UNTEN " << endl;
+		if (position2.z > posz - 0.77) {
 			check[1] = false;
-			return 0;
 		}
 	}
 
@@ -148,9 +154,8 @@ int checkBoundary(glm::vec2 cBlock){
 		posx = groesse*(j + 1);
 		posz = groesse*i;
 
-		if (position2.x > posx - 0.65) {
+		if (position2.x > posx - 0.77) {
 			check[0] = false;
-			return 0;
 		}
 	}
 
@@ -159,32 +164,87 @@ int checkBoundary(glm::vec2 cBlock){
 		posx = groesse*(j - 1);
 		posz = groesse*i;
 
-		if (position2.x < posx + 0.65) {
+		if (position2.x < posx + 0.77) {
 			check[0] = false;
-			return 0;
 		}
 	}
+
+	//oben-rechts
+	if (levelControls[i-1][j + 1] == 1){
+		posx = groesse*(j + 1);
+		posz = groesse*(i-1);
+
+		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
+		if (distance < sqrt(0.5)+0.19) {
+			check[0] = false;
+			check[1] = false;
+		}
+	}
+
+	//unten-rechts
+	if (levelControls[i + 1][j + 1] == 1){
+		posx = groesse*(j + 1);
+		posz = groesse*(i + 1);
+
+		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
+		if (distance < sqrt(0.5) + 0.19) {
+			check[0] = false;
+			check[1] = false;
+		}
+	}
+
+	//unten-links
+	if (levelControls[i + 1][j - 1] == 1){
+		posx = groesse*(j - 1);
+		posz = groesse*(i + 1);
+
+		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
+		if (distance < sqrt(0.5) + 0.19) {
+			check[0] = false;
+			check[1] = false;
+		}
+	}
+
+	//oben-links
+	if (levelControls[i - 1][j - 1] == 1){
+		posx = groesse*(j - 1);
+		posz = groesse*(i - 1);
+
+		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
+		if (distance < sqrt(0.5) + 0.19) {
+			check[0] = false;
+			check[1] = false;
+		}
+	}
+
 	return true;
 }
 
 void computeMatricesFromInputs(bool restartMerker){
-	// glfwGetTime is called only once, the first time this function is called
 	
 	static double lastTime = glfwGetTime();
 	
 	glm::vec3 position_old = position2;
 	glm::vec2 currentBlock;
 	
-
-
-	// Compute time difference between current and last frame
 	double currentTime = glfwGetTime();
 	float deltaTime = float(currentTime - lastTime);
+	fpsTime = fpsTime + deltaTime;
+	frameCount++;
+	if (fps != 0)
+		cout << fps<< endl;
+	if (fpsTime > 1){
+		fps = frameCount / fpsTime;
+		frameCount = 0;
+		fpsTime = 0;
+	}
 	if (restartMerker == true)
 		deltaTime = 0;
+
 	// Get mouse position
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
+
 
 	// Reset mouse position for next frame
 	glfwSetCursorPos(window, 1024/2, 768/2);
@@ -215,13 +275,13 @@ void computeMatricesFromInputs(bool restartMerker){
 		sin(verticalAngle) / 4,
 		cos(horizontalAngle + 1.6) / 4
 		);
-	//-0.9
+
 	glm::vec3 rightArmDirection(
 		sin(horizontalAngle - 1.2) / 6,
 		sin(verticalAngle) / 4,
 		cos(horizontalAngle - 1.2) / 6
 		);
-	//1.6
+
 	glm::vec3 leftLegDirection(
 		sin(horizontalAngle + 2.3) / 4,
 		sin(verticalAngle) / 4,
@@ -234,7 +294,6 @@ void computeMatricesFromInputs(bool restartMerker){
 		cos(horizontalAngle -2.3) / 4
 		);
 
-	cout << "vertical: " << verticalAngle << "horizontal: " << horizontalAngle << endl;
 	// Right vector
 	glm::vec3 right = glm::vec3(
 		sin(horizontalAngle - 3.14f/2.0f), 
@@ -275,7 +334,6 @@ void computeMatricesFromInputs(bool restartMerker){
 	}
 	check[0] = true;
 	check[1] = true;
-	//cout << position2.x << " " << position2.z << " " << levelControls[(int)currentBlock.y][(int)currentBlock.x] << endl;
 
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 
@@ -288,6 +346,7 @@ void computeMatricesFromInputs(bool restartMerker){
 								up                  // Head is up (set to 0,-1,0 to look upside-down)
 						   );
 
+
 	direction.y = 0;
 	ViewMatrixObj	= glm::lookAt(
 								position2,           // Camera is here
@@ -295,16 +354,34 @@ void computeMatricesFromInputs(bool restartMerker){
 								glm::vec3(0.0,1.0,0.0)                  // Head is up (set to 0,-1,0 to look upside-down)
 							);
 
+	for (int i = 0; i < 3; i++){
+		for (int j = 0; j < 3; j++){
+			inversedView[i][j] = ViewMatrixObj[j][i];
+		}
+	}
+
+	inversedView[3][0] = 0;
+	inversedView[3][1] = 0;
+	inversedView[3][2] = 0;
+	inversedView[3][3] = 1;
+	inversedView[0][3] = 0;
+	inversedView[1][3] = 0;
+	inversedView[2][3] = 0;
+
+
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
+
 	objectDirection.y = 0;
+	leftArmDirection.y = 0;
 	rightArmDirection.y = 0;
 	leftLegDirection.y = 0;
 	rightLegDirection.y = 0;
 	position3.x = position2.x + objectDirection.x / 1.4;
 	position3.z = position2.z + objectDirection.z / 1.4;
 	position3.y = (position2.y - 0.05) + objectDirection.y;
-	bodyPositions[0] = position2 + leftArmDirection;
+	bodyPositions[0].x = position2.x + (leftArmDirection.x / 1.4);
+	bodyPositions[0].z = position2.z + (leftArmDirection.z / 1.4);
 	bodyPositions[0].y = (position2.y - 0.05) + leftArmDirection.y;
 	bodyPositions[1] = position2 + rightArmDirection;
 	bodyPositions[1].y = (position2.y - 0.05) + rightArmDirection.y;
@@ -314,9 +391,6 @@ void computeMatricesFromInputs(bool restartMerker){
 	bodyPositions[3].x = position2.x + (rightLegDirection.x / 2.7);
 	bodyPositions[3].z = position2.z + (rightLegDirection.z / 2.7);
 	bodyPositions[3].y = (position2.y - 0.5) + rightLegDirection.y;
-	//bodyPositions[1].x = (position2.x + 0.1) + rightArmDirection.x;
-	//position3 = position2 + direction/2;
-		//cout<<"(" << position3.x << "," << position3.z << ")/(" << position2.x << "," << position2.z <<")" <<endl;
 }
 
 
