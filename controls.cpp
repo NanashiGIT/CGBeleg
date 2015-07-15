@@ -129,7 +129,6 @@ int checkBoundary(glm::vec2 cBlock){
 	glm::vec2 currentBlock = cBlock;
 	int j = cBlock.x;
 	int i = cBlock.y;
-	cout << i << " " << j << endl;
 	float distance = 0;
 	float posx, posz;
 	

@@ -299,7 +299,7 @@ void animateBody(){
 	glm::vec3 rightLeg = bodyPositions[3];
 	float i = -0.12;
 	int fps = getFPS();
-	if (frameCounter < fps*0.125){
+	if (frameCounter <= fps*0.125){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::scale(Model, glm::vec3(0.03f, 0.15f, 0.03f));
@@ -324,7 +324,7 @@ void animateBody(){
 		drawLimbCube();
 		Model = Save;
 	}
-	else if (frameCounter < fps*0.25){
+	else if (frameCounter <= fps*0.25){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::rotate(Model, 22.5f, glm::vec3(1, 0, 0));
@@ -343,7 +343,7 @@ void animateBody(){
 		Model = Save;
 
 	}
-	else if (frameCounter < fps*0.375){
+	else if (frameCounter <= fps*0.375){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::rotate(Model, 45.0f, glm::vec3(1, 0, 0));
@@ -362,7 +362,7 @@ void animateBody(){
 		Model = Save;
 
 
-	}else if (frameCounter < fps*0.5){
+	}else if (frameCounter <= fps*0.5){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::rotate(Model, 22.5f, glm::vec3(1, 0, 0));
@@ -381,7 +381,7 @@ void animateBody(){
 		Model = Save;
 
 	}
-	else if (frameCounter < fps*0.625){
+	else if (frameCounter <= fps*0.625){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::scale(Model, glm::vec3(0.03f, 0.15f, 0.03f));
@@ -406,7 +406,7 @@ void animateBody(){
 		drawLimbCube();
 		Model = Save;
 	}
-	else if (frameCounter < fps*0.75){
+	else if (frameCounter <= fps*0.75){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::scale(Model, glm::vec3(0.03f, 0.15f, 0.03f));
@@ -434,7 +434,7 @@ void animateBody(){
 		Model = Save;
 
 	}
-	else if (frameCounter < fps*0.875){
+	else if (frameCounter <= fps*0.875){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::scale(Model, glm::vec3(0.03f, 0.15f, 0.03f));
@@ -462,7 +462,7 @@ void animateBody(){
 		Model = Save;
 
 	}
-	else if (frameCounter < fps){
+	else if (frameCounter <= fps){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
 		Model = glm::scale(Model, glm::vec3(0.03f, 0.15f, 0.03f));
