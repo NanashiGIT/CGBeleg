@@ -124,17 +124,22 @@ glm::vec2 findPosition(){
 }
 
 int checkBoundary(glm::vec2 cBlock){
+	if (cBlock.x == NULL)
+		return 0;
 	glm::vec2 currentBlock = cBlock;
 	int j = cBlock.x;
 	int i = cBlock.y;
+	cout << i << " " << j << endl;
 	float distance = 0;
 	float posx, posz;
 	
 	//oben
+	if (i < 1 || j < 1 || i == dimensionControls || j == dimensionControls)
+		return 0;
 	if (levelControls[i-1][j] == 1){
 		posx = groesse*j;
 		posz = groesse*(i-1);
-		if (position2.z < posz + 0.77) {
+		if (position2.z < posz + 0.78) {
 			check[1] = false;
 		}
 	}
@@ -144,7 +149,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posx = groesse*j;
 		posz = groesse*(i + 1);
 
-		if (position2.z > posz - 0.77) {
+		if (position2.z > posz - 0.78) {
 			check[1] = false;
 		}
 	}
@@ -154,7 +159,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posx = groesse*(j + 1);
 		posz = groesse*i;
 
-		if (position2.x > posx - 0.77) {
+		if (position2.x > posx - 0.78) {
 			check[0] = false;
 		}
 	}
@@ -164,7 +169,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posx = groesse*(j - 1);
 		posz = groesse*i;
 
-		if (position2.x < posx + 0.77) {
+		if (position2.x < posx + 0.78) {
 			check[0] = false;
 		}
 	}
@@ -175,7 +180,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posz = groesse*(i-1);
 
 		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
-		if (distance < sqrt(0.5)+0.19) {
+		if (distance < sqrt(0.5) + 0.211) {
 			check[0] = false;
 			check[1] = false;
 		}
@@ -187,7 +192,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posz = groesse*(i + 1);
 
 		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
-		if (distance < sqrt(0.5) + 0.19) {
+		if (distance < sqrt(0.5) + 0.211) {
 			check[0] = false;
 			check[1] = false;
 		}
@@ -199,7 +204,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posz = groesse*(i + 1);
 
 		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
-		if (distance < sqrt(0.5) + 0.19) {
+		if (distance < sqrt(0.5) + 0.211) {
 			check[0] = false;
 			check[1] = false;
 		}
@@ -211,7 +216,7 @@ int checkBoundary(glm::vec2 cBlock){
 		posz = groesse*(i - 1);
 
 		distance = sqrt((posx - position2.x)*(posx - position2.x) + (posz - position2.z)*(posz - position2.z));
-		if (distance < sqrt(0.5) + 0.19) {
+		if (distance < sqrt(0.5) + 0.211) {
 			check[0] = false;
 			check[1] = false;
 		}
@@ -231,8 +236,7 @@ void computeMatricesFromInputs(bool restartMerker){
 	float deltaTime = float(currentTime - lastTime);
 	fpsTime = fpsTime + deltaTime;
 	frameCount++;
-	if (fps != 0)
-		cout << fps<< endl;
+
 	if (fpsTime > 1){
 		fps = frameCount / fpsTime;
 		frameCount = 0;

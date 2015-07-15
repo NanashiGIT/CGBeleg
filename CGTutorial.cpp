@@ -42,7 +42,7 @@ glm::mat4 Model;
 GLuint menuID;
 GLuint gameID;
 GLuint colorID;
-GLuint textures[10];
+GLuint textures[11];
 glm::vec3 position;
 int levelCount = 1;
 int frameCounter = 0;
@@ -177,8 +177,8 @@ static void drawLevel(){
 
 	for (int i = 1; i < dimension - 1; i++){
 		for (int j = 1; j < dimension - 1; j++){
-			if (level[i][j] == 1 || level[i][j] == 0 || level[i][j] == 3){
-				glBindTexture(GL_TEXTURE_2D, textures[0]);
+			if (level[i][j] == 1 || level[i][j] == 0 || level[i][j] == 3 || level[i][j] == 4){
+				glBindTexture(GL_TEXTURE_2D, textures[10]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
@@ -215,6 +215,14 @@ static void drawLevel(){
 	for (int i = 0; i < dimension; i++){
 		for (int j = 0; j < dimension; j++){
 			if (level[i][j] == 1){
+				glBindTexture(GL_TEXTURE_2D, textures[0]);
+				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*0.5, groesse*i));
+				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
+				sendMVP();
+				drawCube();
+				Model = save;
+			}else if (level[i][j] == 4){
+				glBindTexture(GL_TEXTURE_2D, textures[3]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*0.5, groesse*i));
 				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
 				sendMVP();
@@ -510,25 +518,27 @@ void loadTextures(){
 		textures[0] = loadBMP_custom("stones.bmp");
 		textures[1] = loadBMP_custom("trap_beartrap.bmp");
 		textures[2] = loadBMP_custom("start.bmp");
-		textures[3] = loadBMP_custom("finish.bmp");
+		textures[3] = loadBMP_custom("finish_1.bmp");
 		textures[4] = loadBMP_custom("trap_hole.bmp");
 		textures[5] = loadBMP_custom("menu.bmp");
 		textures[6] = loadBMP_custom("death-screen.bmp");
 		textures[7] = loadBMP_custom("finish-screen.bmp");
 		textures[8] = loadBMP_custom("wood.bmp");
 		textures[9] = loadBMP_custom("arm.bmp");
+		textures[10] = loadBMP_custom("stones.bmp");
 	}
 	else if(levelCount == 2){
 		textures[0] = loadBMP_custom("level2_walls.bmp");
-		textures[1] = loadBMP_custom("trap_beartrap.bmp");
-		textures[2] = loadBMP_custom("start.bmp");
-		textures[3] = loadBMP_custom("finish.bmp");
-		textures[4] = loadBMP_custom("trap_hole.bmp");
+		textures[1] = loadBMP_custom("trap_beartrap_level2.bmp");
+		textures[2] = loadBMP_custom("start_2.bmp");
+		textures[3] = loadBMP_custom("finish_2.bmp");
+		textures[4] = loadBMP_custom("trap_hole_level2.bmp");
 		textures[5] = loadBMP_custom("menu.bmp");
 		textures[6] = loadBMP_custom("death-screen.bmp");
 		textures[7] = loadBMP_custom("finish-screen.bmp");
 		textures[8] = loadBMP_custom("wood.bmp");
 		textures[9] = loadBMP_custom("arm.bmp");
+		textures[10] = loadBMP_custom("floor_2.bmp");
 	}
 }
 
