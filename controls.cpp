@@ -16,50 +16,51 @@ using namespace glm;
 
 using namespace std;
 
-glm::mat4 ViewMatrix;
-glm::mat4 inversedView;
-glm::mat4 ViewMatrixObj;
-glm::mat4 ProjectionMatrix;
-int fps = 0;
+glm::mat4 ViewMatrix;					// ViewMatrix der Kamera.
+glm::mat4 inversedView;					// Inverse ViewMatrix
+glm::mat4 ViewMatrixObj;				// ViewMatrix der Fackel
+glm::mat4 ProjectionMatrix;				// ProjektionsMatrix
+int fps = 0;	
 
+// ##### Erhalte Viewmatrix #####
 glm::mat4 getViewMatrix(){
 	return ViewMatrix;
 }
 
-
+// ##### Erhalte Projektionsmatrix #####
 glm::mat4 getProjectionMatrix(){
 	return ProjectionMatrix;
 }
 
+// ##### Erhalte inverse Matrix #####
 glm::mat4 getInversedView(){
 	return inversedView;
 }
 
+// ##### Erhalte fps #####
 int getFPS(){
 	return fps;
 }
 
 // Initial position : on +Z
-glm::vec3 position2; 
-glm::vec3 position3;
+glm::vec3 position2;								// Position des Spielers
+glm::vec3 position3;								// Position der Fackel.
 glm::vec3* bodyPositions = new glm::vec3[4];		// [0] = Linker Arm, [1] = Rechter Arm, [2] = Linkes Bein, [3] = Rechtes Bein
-// Initial horizontal angle : toward -Z
 float horizontalAngle = 3.14f;
-// Initial vertical angle : none
 float verticalAngle = 0.0f;
-// Initial Field of View
+
 float initialFoV = 75.0f;
 float verticalAngle_LowerLimit = -1.0f;
 float verticalAngle_UpperLimit = 1.3f;
-float speed = 1.0f; // 3 units / second
+float speed = 1.0f; 
 float mouseSpeed = 0.005f;
 bool check[2];
 vector< vector<int> > levelControls;
-int dimensionControls = 0;
-float fpsTime = 0;
-int frameCount = 0;
+int dimensionControls = 0;							// Breite/Höhe des gesamten Levels.
+float fpsTime = 0;									// Aufaddierte Delta-Zeit zum berechnen der fps.
+int frameCount = 0;									// Zähler für die Frames, zum berechnen der fps.
 
-
+// ##### Lese das Level aus der Datei ein #####
 void readLevelControls(int lvlCount){
 	levelControls.clear();
 	string line;
@@ -91,6 +92,7 @@ void setPosition(glm::vec3 position){
 	position2 = position;
 }
 
+// ##### Finde Position des Spielers. #####
 glm::vec2 findPosition(){
 	glm::vec2 currentBlock;
 	float bottomLeftX, bottomLeftZ, topRightX, topRightZ;
@@ -123,16 +125,18 @@ glm::vec2 findPosition(){
 	return currentBlock;
 }
 
+
+// ##### Kollisionserkennung #####
 int checkBoundary(glm::vec2 cBlock){
 	if (cBlock.x == NULL)
 		return 0;
 	glm::vec2 currentBlock = cBlock;
-	int j = cBlock.x;
-	int i = cBlock.y;
+	int j = cBlock.x;		// Position des Blockes, auf dem der Spieler sich befindet.
+	int i = cBlock.y;		// Position des Blockes, auf dem der Spieler sich befindet.
 	float distance = 0;
-	float posx, posz;
+	float posx, posz;		// im Folgenden die Position der Mittelpunkte der angrenzenden Blöcke.
 	
-	//oben
+	// ##### oben #####
 	if (i < 1 || j < 1 || i == dimensionControls || j == dimensionControls)
 		return 0;
 	if (levelControls[i-1][j] == 1){
@@ -143,7 +147,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//unten
+	// ##### unten #####
 	if (levelControls[i + 1][j] == 1){
 		posx = groesse*j;
 		posz = groesse*(i + 1);
@@ -153,7 +157,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//rechts
+	// ##### rechts #####
 	if (levelControls[i][j + 1] == 1){
 		posx = groesse*(j + 1);
 		posz = groesse*i;
@@ -163,7 +167,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//links
+	// ##### links #####
 	if (levelControls[i][j - 1] == 1){
 		posx = groesse*(j - 1);
 		posz = groesse*i;
@@ -173,7 +177,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//oben-rechts
+	// ##### obren-rechts #####
 	if (levelControls[i-1][j + 1] == 1){
 		posx = groesse*(j + 1);
 		posz = groesse*(i-1);
@@ -185,7 +189,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//unten-rechts
+	// ##### unten-rechts #####
 	if (levelControls[i + 1][j + 1] == 1){
 		posx = groesse*(j + 1);
 		posz = groesse*(i + 1);
@@ -197,7 +201,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//unten-links
+	// ##### unten-links #####
 	if (levelControls[i + 1][j - 1] == 1){
 		posx = groesse*(j - 1);
 		posz = groesse*(i + 1);
@@ -209,7 +213,7 @@ int checkBoundary(glm::vec2 cBlock){
 		}
 	}
 
-	//oben-links
+	// ##### oben-links #####
 	if (levelControls[i - 1][j - 1] == 1){
 		posx = groesse*(j - 1);
 		posz = groesse*(i - 1);
@@ -243,16 +247,16 @@ void computeMatricesFromInputs(bool restartMerker){
 	}
 	if (restartMerker == true)
 		deltaTime = 0;
-
-	// Get mouse position
+	cout << deltaTime << endl;
+	//##### Erhalte Mausposition ##### 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
 
-	// Reset mouse position for next frame
+	// ##### Setzte Mausposition für den nächsten Frame zurück. #####
 	glfwSetCursorPos(window, 1024/2, 768/2);
 
-	// Compute new orientation
+	// ##### Berechne neue Orientierung. #####
 	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
 	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
 	if (verticalAngle < verticalAngle_LowerLimit)
@@ -260,13 +264,14 @@ void computeMatricesFromInputs(bool restartMerker){
 	else if (verticalAngle > verticalAngle_UpperLimit)
 		verticalAngle = verticalAngle_UpperLimit;
 
-	// Direction : Spherical coordinates to Cartesian coordinates conversion
+	// ##### Berechnung der Spherischen Koordinaten in das Kathesische Koordinatensystem. #####
 	glm::vec3 direction(
 		cos(verticalAngle) * sin(horizontalAngle), 
 		sin(verticalAngle),
 		cos(verticalAngle) * cos(horizontalAngle)
 	);
-	
+
+	//##### Berechnung der Orientierungen der Gliedmaßen/der Fackel #####
 	glm::vec3 objectDirection(
 		sin(horizontalAngle -0.8) /4,
 		sin(verticalAngle) /4,
@@ -297,66 +302,72 @@ void computeMatricesFromInputs(bool restartMerker){
 		cos(horizontalAngle -2.3) / 4
 		);
 
-	// Right vector
+	// ##### Right vector #####
 	glm::vec3 right = glm::vec3(
 		sin(horizontalAngle - 3.14f/2.0f), 
 		0,
 		cos(horizontalAngle - 3.14f/2.0f)
 	);
 	
-	// Up vector
+	// ##### Up-Vector #####
 	glm::vec3 up = glm::cross( right, direction );
-	//glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
-	// Move forward
+	// ##### Vorwärts bewegen #####
 	if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
 		position2 += (glm::vec3(1.0f, 0.0f, 1.0f)* direction) * deltaTime * speed;
 	}
-	// Move backward
+	// ##### Rückwärs bewegen #####
 	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
 		position2 -= (glm::vec3(1.0f,0.0f,1.0f)* direction) * deltaTime * speed;
 	}
-	// Strafe right
+	// ##### Nach rechts bewegen #####
 	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
 		position2 += right * deltaTime * speed;
 	}
-	// Strafe left
+	// ##### Nach links bewegen #####
 	if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
 		position2 -= right * deltaTime * speed;
 	}
 
+	// ##### Derzeitigen Standort ermitteln #####
 	currentBlock = findPosition();
+	// ##### Kollisionserkennung #####
 	checkBoundary(currentBlock);
 	
+	// ##### Wenn Kollision in x-Richtung #####
 	if (check[0] == false){
 		position2.x = position_old.x;
 	}
+	// ##### Wenn Kollision in y-Richtung #####
 	if (check[1] == false){
 		position2.z = position_old.z;
 	}
 	check[0] = true;
 	check[1] = true;
 
-	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
+	float FoV = initialFoV;
 
-	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 100.0f);
-	// Camera matrix
+
+	// ##### ViewMatrix der Kamera #####
 	ViewMatrix       = glm::lookAt(
-								position2,           // Camera is here
-								position2+direction, // and looks here : at the same position, plus "direction"
-								up                  // Head is up (set to 0,-1,0 to look upside-down)
+								position2,							
+								position2+direction, 
+								up                  
 						   );
 
 
 	direction.y = 0;
+
+	// ##### ViewMatrix des Objektes #####
 	ViewMatrixObj	= glm::lookAt(
-								position2,           // Camera is here
-								position2 + direction, // and looks here : at the same position, plus "direction"
-								glm::vec3(0.0,1.0,0.0)                  // Head is up (set to 0,-1,0 to look upside-down)
+								position2,								
+								position2 + direction,					
+								glm::vec3(0.0,1.0,0.0)                 
 							);
 
+	// ##### Berechnung der Inversen #####
 	for (int i = 0; i < 3; i++){
 		for (int j = 0; j < 3; j++){
 			inversedView[i][j] = ViewMatrixObj[j][i];
@@ -372,9 +383,10 @@ void computeMatricesFromInputs(bool restartMerker){
 	inversedView[2][3] = 0;
 
 
-	// For the next frame, the "last time" will be "now"
+	// ##### Für den nächsten Frame wird das jetztige zum alten gesetzt. #####
 	lastTime = currentTime;
 
+	// ##### Diverse Orientierungsberechnungen für die Fackel/Gliedmaßen. #####
 	objectDirection.y = 0;
 	leftArmDirection.y = 0;
 	rightArmDirection.y = 0;
@@ -396,16 +408,17 @@ void computeMatricesFromInputs(bool restartMerker){
 	bodyPositions[3].y = (position2.y - 0.5) + rightLegDirection.y;
 }
 
-
+// ##### Erhalte Position des Spielers. #####
 glm::vec3 getPosition(){
 	return position2;
 }
 
-
+// ##### Erhalte Position der Fackel. #####
 glm::vec3 getPositionWithDirection(){
 	return position3;
 }
 
+// ##### Erhalte Positionen der Gliedmaßen. #####
 glm::vec3* getBodyPositions(){
 	return bodyPositions;
 }

@@ -39,31 +39,26 @@ void error_callback(int error, const char* description)
 glm::mat4 Projection;
 glm::mat4 View;
 glm::mat4 Model;
-GLuint menuID;
-GLuint gameID;
-GLuint colorID;
-GLuint textures[11];
-glm::vec3 position;
-int levelCount = 1;
-int frameCounter = 0;
-bool dead = 0;
-bool finished = 0;
-bool restart = 0;
-bool init = false;
-glm::vec2 currentBlock;
-vector< vector<int> > level;
-int dimension = 0;
+GLuint menuID;						// ID der Shader für das Menü
+GLuint gameID;						// ID der Shader für das Spiel.
+GLuint textures[11];				// Array für alle Texturen
+glm::vec3 position;					// Position des Spielers
+int levelCount = 1;					// Das aktuelle Level
+int frameCounter = 0;				// Framezähler für die Animationen
+bool dead = 0;						// Merker, ob man gestorben ist
+bool finished = 0;					// Merker, ob man das letzte Level geschafft hat.
+bool restart = 0;					//merker, ob das Level oder Spiel neugestartet wird. Wichtig für das Zurücksetzen der DeltaTime in controls.
+bool init = false;					//merker, der eigendlich nur entscheidet, ob ENTER gedrückt werden kann oder nicht.
+glm::vec2 currentBlock;				//Block, auf dem wir uns befinden.
+vector< vector<int> > level;		//Vektor mit dem Level, welches wir auslesen.
+int dimension = 0;					//Die Breite/Höhe des gesamten Levels.
 void loop_game();
 void loop_menu();
-void loadTextures();
+void loadTextures();		
 void animateBody();
 int main();
-float x = 0.0f, y = 0.0f, z=0.0f;
-int a=1,b=0,c=0;
-int textureSelector = 0;
-float x_1 = 0.0f, x_2 = 0.0f, x_3 = 0.0f, x_4 = 0.0f;
-stringstream convert;
-string levelcounter;
+float x = 0.0f, y = 0.0f, z=0.0f;	//Koordinaten für die Position des Spielers.
+int textureSelector = 0;			//Entscheidet, welche Textur für eine Falle benutzt werden soll.
 
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -85,6 +80,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	case GLFW_KEY_W:
 		animateBody();
 		break;
+//##### Genutzt um das Spiel beim letzten Finish neustarten zu können. #####
 	case GLFW_KEY_ENTER:
 		if (init == false){
 			finished = 0;
@@ -92,8 +88,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			loop_game();
 		}
 		break;
+//##### Genutzt um das Level neustarten zu können. #####
 	case GLFW_KEY_SPACE:
 		if (init == true){
+			glDeleteTextures(1, &textures[0]);
+			glDeleteTextures(1, &textures[1]);
+			glDeleteTextures(1, &textures[2]);
+			glDeleteTextures(1, &textures[3]);
+			glDeleteTextures(1, &textures[4]);
+			glDeleteTextures(1, &textures[5]);
+			glDeleteTextures(1, &textures[6]);
+			glDeleteTextures(1, &textures[7]);
+			glDeleteTextures(1, &textures[8]);
+			glDeleteTextures(1, &textures[9]);
+			glDeleteTextures(1, &textures[10]);
 			dead = 0;
 			finished = 0;
 			loop_game();
@@ -120,6 +128,7 @@ void sendMVP()
 	glUniformMatrix4fv(glGetUniformLocation(menuID, "P"), 1, GL_FALSE, &Projection[0][0]);
 }
 
+//##### Liest das Level aus einer Textdatei ein. #####
 static void readLevel(){
 	level.clear();
 	string line;
@@ -147,36 +156,14 @@ static void readLevel(){
 	else cout << "Level konnte nicht gefunden werden!";
 }
 
-void drawCS(){
-	glm::mat4 Save = Model;
-	Model = glm::mat4(1.0f);
-	Model = glm::scale(Model, glm::vec3(10000.0, 0.01, 0.01));
-	sendMVP();
-	drawCube();
-	Model = Save;
-
-
-	Model = glm::mat4(1.0f);
-	Model = glm::scale(Model, glm::vec3(0.01, 0.01, 10000.0));
-	sendMVP();
-	drawCube();
-	Model = Save;
-
-
-	Model = glm::mat4(1.0f);
-	Model = glm::scale(Model, glm::vec3(0.01, 10000.0, 0.01));
-	sendMVP();
-	drawCube();
-	Model = Save;
-}
-
+//##### Zeichnet das Level. #####
 static void drawLevel(){
 	glm::mat4 save = Model;
 
-	drawCS();
-
+	//##### Zeichnen des Bodens #####
 	for (int i = 1; i < dimension - 1; i++){
 		for (int j = 1; j < dimension - 1; j++){
+			//##### Falls Block eine Wand, normaler Boden, Ende oder der Start ist benutze Boden-Textur #####
 			if (level[i][j] == 1 || level[i][j] == 0 || level[i][j] == 3 || level[i][j] == 4){
 				glBindTexture(GL_TEXTURE_2D, textures[10]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
@@ -184,7 +171,7 @@ static void drawLevel(){
 				sendMVP();
 				drawCube();
 				Model = save;
-
+			//##### Falls Block eine Falle ist, nutze eine der Falle-Texturen #####
 			}else if (level[i][j] == 2){
 				if (textureSelector == 0){
 					glBindTexture(GL_TEXTURE_2D, textures[1]);
@@ -200,20 +187,13 @@ static void drawLevel(){
 				drawCube();
 				Model = save;
 			}
-			else{
-				glBindTexture(GL_TEXTURE_2D, textures[level[i][j] - 1]);
-				Model = glm::translate(Model, glm::vec3(groesse*j, (-1)*groesse*0.5, groesse*i));
-				Model = glm::scale(Model, glm::vec3(groesse*0.5, groesse*0.5, groesse*0.5));
-				sendMVP();
-				drawCube();
-				Model = save;
-			}
 		}
 	}
 
-
+	//##### Zeichnen der Wände #####
 	for (int i = 0; i < dimension; i++){
 		for (int j = 0; j < dimension; j++){
+			//##### Falls Block eine Wand ist, nutze die Wand-Textur #####
 			if (level[i][j] == 1){
 				glBindTexture(GL_TEXTURE_2D, textures[0]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*0.5, groesse*i));
@@ -221,6 +201,7 @@ static void drawLevel(){
 				sendMVP();
 				drawCube();
 				Model = save;
+			//##### Falls Block das Ziel ist, nutze Ziel-Textur #####
 			}else if (level[i][j] == 4){
 				glBindTexture(GL_TEXTURE_2D, textures[3]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*0.5, groesse*i));
@@ -229,6 +210,7 @@ static void drawLevel(){
 				drawCube();
 				Model = save;
 			}
+			//##### falls Block Start ist, setzte die Spielerposition auf die Koordinaten. #####
 			if (level[i][j] == 3){
 				x = groesse*j;
 				y = groesse*0.5;
@@ -237,10 +219,13 @@ static void drawLevel(){
 		}
 	}
 
+	//##### Zeichnen der Decke #####
 	for (int i = 1; i < dimension - 1; i++){
 		for (int j = 1; j < dimension - 1; j++){
+			//##### Falls Block der Start ist, nutze Start-Textur #####
 			if (level[i][j] == 3)
 				glBindTexture(GL_TEXTURE_2D, textures[2]);
+			//##### Ansonsten Standart-Textur #####
 			else
 				glBindTexture(GL_TEXTURE_2D, textures[0]);
 				Model = glm::translate(Model, glm::vec3(groesse*j, groesse*1.5, groesse*i));
@@ -252,15 +237,12 @@ static void drawLevel(){
 	}
 	textureSelector = 0;
 }
-
+//##### Zeichnen des rechten Arms und der Fackel #####
 void drawSeg(glm::vec3 v1){
 	glm::mat4 Save = Model;
 	glm::mat4 inversed = getInversedView();
 	glm::vec3* bodyPositions = getBodyPositions();
-	glm::vec3 leftArm = bodyPositions[0];
 	glm::vec3 rightArm = bodyPositions[1];
-	glm::vec3 leftLeg = bodyPositions[2];
-	glm::vec3 rightLeg = bodyPositions[3];
 
 	Model = glm::translate(Model, v1);
 	Model = Model * inversed;
@@ -289,7 +271,7 @@ void drawSeg(glm::vec3 v1){
 
 }
 
-
+//##### Zeichnen und Animieren der beiden Beine und des linken Arms #####
 void animateBody(){
 	glm::mat4 Save = Model;
 	glm::mat4 inversed = getInversedView();
@@ -299,6 +281,7 @@ void animateBody(){
 	glm::vec3 rightLeg = bodyPositions[3];
 	float i = -0.12;
 	int fps = getFPS();
+	// Animation der Gliedmaßen in 1/8tel Schritten.
 	if (frameCounter <= fps*0.125){
 		Model = glm::translate(Model, glm::vec3(leftLeg.x, leftLeg.y + 0.2, leftLeg.z));
 		Model = Model * inversed;
@@ -492,18 +475,21 @@ void animateBody(){
 
 }
 
-
-
+//##### Beim Auslösen der Falle #####
 void triggerTrap(){
 	dead = 1;
+	restart = 1;
 	loop_menu();
 }
 
+//##### Beim Auslösen des Zieles eines Levels.  #####
 void triggerFinish(){
+	//##### Wenn es noch nicht das letzte Level war #####
 	if (levelCount < 2){
 		levelCount++;
 		loop_game();
 	}
+	//##### Wenn es das letzte Level war #####
 	else{
 		finished = 1;
 		restart = 1;
@@ -512,8 +498,9 @@ void triggerFinish(){
 	
 }
 
-
+//##### Einbinden der Texturen #####
 void loadTextures(){
+	//##### Texturen für Level 1 #####
 	if (levelCount == 1){
 		textures[0] = loadBMP_custom("stones.bmp");
 		textures[1] = loadBMP_custom("trap_beartrap.bmp");
@@ -527,6 +514,7 @@ void loadTextures(){
 		textures[9] = loadBMP_custom("arm.bmp");
 		textures[10] = loadBMP_custom("stones.bmp");
 	}
+	//##### Texturen für Level 2 #####
 	else if(levelCount == 2){
 		textures[0] = loadBMP_custom("level2_walls.bmp");
 		textures[1] = loadBMP_custom("trap_beartrap_level2.bmp");
@@ -542,6 +530,7 @@ void loadTextures(){
 	}
 }
 
+//##### Anzeige des Menüs #####
 void loop_menu(){
 
 	glfwSetWindowTitle(window, "CGBeleg - Menu");
@@ -565,14 +554,17 @@ void loop_menu(){
 			);
 		Projection = glm::perspective(75.0f, 4.0f / 3.0f, 0.1f, 100.0f);
 		
+		//##### Wenn es der Finish-Screen sein soll #####
 		if (finished == 1){
 			glBindTexture(GL_TEXTURE_2D, textures[7]);
 			init = false;
 			levelCount = 1;
 			level.clear();
 		}
+		//##### Wenn man tot ist #####
 		else if (dead == 1)
 			glBindTexture(GL_TEXTURE_2D, textures[6]);
+		//##### Wenn das Spiel gestartet/neugestartet wurde #####
 		else if (dead == 0)
 			glBindTexture(GL_TEXTURE_2D, textures[5]);
 
@@ -590,6 +582,7 @@ void loop_menu(){
 	}
 }
 
+//##### Anzeige und Berechnungen der Spielwelt #####
 void loop_game(){
 	string title = "CGBeleg - Level ";
 	title.append(to_string(levelCount));
@@ -618,6 +611,7 @@ void loop_game(){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		computeMatricesFromInputs(restart);
+		// //##### Zurücksetzen des Merkers, da deltaTime in computeMatricesFromInputs nur einmal pro Restart auf 0 gesetzt werden muss #####
 		if (restart == true)
 			restart = false;
 		Projection = getProjectionMatrix();
@@ -633,12 +627,15 @@ void loop_game(){
 		drawSeg(getPositionWithDirection());
 
 		Model = Save;
+		//##### Wenn man sich nach vorne bewegt, soll animiert werden. #####
+		//##### Wenn man sich nicht bewegt, soll der frameCounter auf 0 gesetzt werden. #####
 		if (glfwGetKey(window, GLFW_KEY_W) != GLFW_PRESS){
 			frameCounter = 0;
 		}
 		else if (frameCounter < fps){
 			frameCounter++;
 		}
+		//##### Wenn frameCounter die frames per second überschritten hat. #####
 		else{
 			frameCounter = 0;
 		}
@@ -647,9 +644,11 @@ void loop_game(){
 		currentBlock = findPosition();
 		int x = currentBlock.x;
 		int z = currentBlock.y;
+		//##### Wenn man sich auf einer Falle befindet. #####
 		if (level[z][x] == 2){
 			triggerTrap();
 		}
+		//##### Wenn man sich am Ziel befindet. #####
 		else if (level[z][x] == 4){
 			triggerFinish();
 		}
@@ -660,6 +659,7 @@ void loop_game(){
 	}
 }
 
+//##### Initialisierungen von Parametern. #####
 int main()
 {
 		
@@ -723,7 +723,7 @@ int main()
 	glDeleteTextures(1, &textures[7]);
 	glDeleteTextures(1, &textures[8]);
 	glDeleteTextures(1, &textures[9]);
-
+	glDeleteTextures(1, &textures[10]);
 	glDeleteProgram(menuID);
 	glDeleteProgram(gameID);
 	glfwTerminate();
